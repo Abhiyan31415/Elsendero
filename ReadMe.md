@@ -1,2 +1,2 @@
-EL Sendero
+EL Sendero.
 A Hike Management app
