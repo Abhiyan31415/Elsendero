@@ -12,7 +12,7 @@ import {
   IconButton,
   TextField,
 } from '@mui/material';
-import GoogleOneTapLogin from './GoogleOneTapLogin'
+
 function Login() {
     const {state:{openLogin},dispatch}=useValue()
     const[title,setTitle]=useState('Login')
@@ -107,7 +107,7 @@ function Login() {
                 {isRegister?'Sign in':'Register'}
             </Button>
             <DialogActions sx={{justifyContent:'center',py:'24px'}}>
-                <GoogleOneTapLogin/>
+                
             </DialogActions>
         </DialogActions>
     </Dialog>

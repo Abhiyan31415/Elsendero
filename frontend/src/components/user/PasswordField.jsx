@@ -11,7 +11,7 @@ function PasswordField({passwordRef,id='password',label='Password'}) {
     }
   return (
     <TextField
-                autoFocus
+                
                 margin="normal"
                 variant='standard'
                 id={id}
