@@ -1,5 +1,5 @@
 import React, { useState,useRef, useEffect } from 'react'
-import {register} from "../../actions/user.js"
+import {login, register} from "../../actions/user.js"
 import Dialog from '@mui/material/Dialog'
 import {useValue} from '../../context/ContextProvider'
 import { DialogContent, DialogContentText, DialogTitle } from '@mui/material'
@@ -31,6 +31,10 @@ function Login() {
        e.preventDefault();
        const email=emailRef.current.value;
        const password=passwordRef.current.value;
+    if(!isRegister){return login({email,password},dispatch)}
+        
+    
+
        const name=nameRef.current.value;
        const confirmPassword=confirmPasswordRef.current.value;
        if(password!==confirmPassword){
