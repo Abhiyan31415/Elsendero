@@ -19,7 +19,7 @@ app.use(express.json({ limit: '10mb' }));
 
 app.use('/room', roomRouter);
 app.use('/user', userRouter); // Corrected path
-app.use('/', (req, res) => {
+app.get('/', (req, res) => {
     res.json({ message: 'Hello World' });
 });
 app.use((req, res) => {
