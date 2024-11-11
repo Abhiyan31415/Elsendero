@@ -7,7 +7,13 @@ const auth = async (req, res, next) => {
         const decodedToken=jwt.verify(token,process.env.JWT_SECRET);
         const{id,name,photoURL}=decodedToken;
         req.user={id,name,photoURL};
+        next();
     }catch(error){
         console.log(error)
+        res.status(401).json({
+            success:false,
+            message:"Something went wrong with authorization"
+        })
     }
 }
+export default auth;
