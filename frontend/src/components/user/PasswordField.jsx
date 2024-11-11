@@ -2,7 +2,7 @@ import React,{useState} from 'react'
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { IconButton, InputAdornment, TextField } from '@mui/material';
 function PasswordField({passwordRef,id='password',label='Password'}) {
-    const [showPassword,setShowPassword]=useState(false)
+    const [showPassword ,setShowPassword]=useState(false)
     const handleClick=()=>{
         setShowPassword(!showPassword)
     }
@@ -11,7 +11,7 @@ function PasswordField({passwordRef,id='password',label='Password'}) {
     }
   return (
     <TextField
-                autoFocus
+                
                 margin="normal"
                 variant='standard'
                 id={id}

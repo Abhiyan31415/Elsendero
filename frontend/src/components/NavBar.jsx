@@ -3,10 +3,10 @@ import {AppBar, IconButton, Typography,Container,Toolbar, Box,Button} from "@mui
 import Avatar from '@mui/material/Avatar';
 import MenuIconSharp from '@mui/icons-material/MenuSharp';
 import LockIcon from '@mui/icons-material/Lock';
-import photoUrl from '../assets/usericons/meli.png';
+
 import UserIcons from './user/UserIcons';
 import { useValue } from '../context/ContextProvider';
-const user={name:'test',photoUrl}
+
 const NavBar=()=>{
     const {state:{currentUser},
     dispatch
@@ -16,7 +16,7 @@ const NavBar=()=>{
             <Container maxWidth='lg'>
                 <Toolbar disableGutters>
                     <Box sx={{mr:1}}>
-                        <IconButton size='large' color='white'>
+                        <IconButton size='large' color='inherit'>
                             <MenuIconSharp/>
                         </IconButton>
                     </Box>
