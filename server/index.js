@@ -1,27 +1,18 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import mongoose from 'mongoose';
-import http from 'http';
-import { Server } from 'socket.io';
-
 import roomRouter from './routes/roomRouter.js';
+import mongoose from 'mongoose';
 import userRouter from './routes/userRouter.js';
-import messageRouter from './routes/messageRouter.js';
-import Message from './models/Message.js';
 
 dotenv.config();
 const port = process.env.PORT || 5000;
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server, {
-    cors: { origin: "*" }
-});
 
 app.use(express.json({ limit: '10mb' }));
 
 // CORS setup
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', process.env.CLIENT_URL || '*');
+    res.setHeader('Access-Control-Allow-Origin', process.env.CLIENT_URL);
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH');
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,Authorization');
     next();
@@ -29,7 +20,7 @@ app.use((req, res, next) => {
 
 app.use('/messages', messageRouter);
 app.use('/room', roomRouter);
-app.use('/user', userRouter);
+app.use('/user', userRouter); // Corrected path
 app.get('/', (req, res) => {
     res.json({ message: 'Hello World' });
 });
@@ -63,13 +54,10 @@ app.get("/messages", async (req, res) => {
 
 const startServer = async () => {
     try {
-        await mongoose.connect(process.env.MONGO_CONNECT, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        });
-        server.listen(port, () => console.log(`Server is running on port ${port}`));
+        await mongoose.connect(process.env.MONGO_CONNECT);
+        app.listen(port, () => console.log(`Server is running on port ${port}`));
     } catch (error) {
-        console.log("Failed to start server:", error);
+        console.log(error);
     }
 };
 
