@@ -17,10 +17,9 @@ const io = new Server(server, {
     cors: { origin: "*" }
 });
 
-// Middleware to parse JSON data
 app.use(express.json({ limit: '10mb' }));
 
-// Set up CORS headers
+// CORS setup
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', process.env.CLIENT_URL || '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH');
@@ -28,7 +27,6 @@ app.use((req, res, next) => {
     next();
 });
 
-// Route setup
 app.use('/messages', messageRouter);
 app.use('/room', roomRouter);
 app.use('/user', userRouter);
@@ -39,19 +37,14 @@ app.use((req, res) => {
     res.status(404).json({ message: 'Page not found' });
 });
 
-
 io.on("connection", (socket) => {
     console.log("A user connected");
 
     socket.on("chat message", async (msg) => {
-        const message = new Message({
-            userId: msg.userId,
-            username: msg.username,
-            content: msg.content
-        });
+        const message = new Message(msg);
         await message.save();
 
-        io.emit("chat message", msg); // Broadcast to all clients
+        io.emit("chat message", message); // Broadcast to all clients
     });
 
     socket.on("disconnect", () => {
@@ -59,16 +52,14 @@ io.on("connection", (socket) => {
     });
 });
 
-
 app.get("/messages", async (req, res) => {
     try {
-        const messages = await Message.find().sort({ timestamp: 1 }).limit(50); // Retrieve last 50 messages
+        const messages = await Message.find().sort({ timestamp: 1 }).limit(50);
         res.json(messages);
     } catch (error) {
         res.status(500).json({ error: "Unable to retrieve messages" });
     }
 });
-
 
 const startServer = async () => {
     try {
