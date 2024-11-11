@@ -6,7 +6,8 @@ const initialState = {
     openLogin:false,
     loading:false,
     alert:{open:false,severity:'info',message:''},
-    profile:{open:false,file:null,photo:''}
+    profile:{open:false,file:null,photo:''},
+    images:[]
 }
 const Context=createContext(initialState)
 export const useValue=()=>{

@@ -7,13 +7,12 @@ import { getAuth } from 'firebase/auth';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyD9VJFP4n5lIi5VSIayrhSI7Uu9u7XvgK8",
-    authDomain: "travel-b7a0d.firebaseapp.com",
-    projectId: "travel-b7a0d",
-    storageBucket: "travel-b7a0d.firebasestorage.app",
-    messagingSenderId: "1040797947018",
-    appId: "1:1040797947018:web:72d8cf7193e11ac6f64973",
-    measurementId: "G-WFR2DKLEKK"
+    apiKey: 'AIzaSyDMWUHFrj2ys2hzBaIirm7z6ZtTxFdUSng',
+  authDomain: "travel-bf50e.firebaseapp.com",
+  projectId: "travel-bf50e",
+  storageBucket: "travel-bf50e.firebasestorage.app",
+  messagingSenderId: "801632241563",
+  appId: "1:801632241563:web:d0bf1e3e2148705b30033e"
 };
 
 // Initialize Firebase

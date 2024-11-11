@@ -1,17 +1,21 @@
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import { storage } from './config';
+// src/utils/uploadFile.js
 
-const uploadFile = (file, filePath) => {
-  return new Promise(async (resolve, reject) => {
-    const storageRef = ref(storage, filePath);
-    try {
-      await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
-      resolve(url);
-    } catch (error) {
-      reject(error);
-    }
+const uploadFile = async (file, userId) => {
+  const formData = new FormData();
+  formData.append('image', file);
+  formData.append('userId', userId);
+
+  const response = await fetch('http://localhost:5000/upload', {
+    method: 'POST',
+    body: formData,
   });
+
+  if (!response.ok) {
+    throw new Error('Failed to upload file');
+  }
+
+  const data = await response.json();
+  return data.filePath;
 };
 
 export default uploadFile;
