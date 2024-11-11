@@ -7,6 +7,7 @@ import Login from './components/user/Login'
 import Notification from './components/notifications/Notification'
 import Loading from './components/Loading'
 import ChatComponent from './components/ChatComponent'
+import BottomNav from './components/BottomNav'
 function App() {
   const [count, setCount] = useState(0)
 
@@ -16,7 +17,7 @@ function App() {
     <Notification/>
     <Login/>
       <NavBar/>
-      <ChatComponent/>
+      <BottomNav/>
     </>
   )
 }

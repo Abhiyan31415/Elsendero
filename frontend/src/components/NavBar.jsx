@@ -12,6 +12,7 @@ const NavBar=()=>{
     dispatch
 }=useValue();
     return(
+        <>
         <AppBar sx={{backgroundColor:'#06402b'}}>
             <Container maxWidth='lg'>
                 <Toolbar disableGutters>
@@ -41,6 +42,8 @@ const NavBar=()=>{
                 </Toolbar>
             </Container>
         </AppBar>
+        <Toolbar/>
+        </>
     )
 }
 export default NavBar;
