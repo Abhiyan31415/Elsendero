@@ -1,4 +1,5 @@
 import React, { useState,useRef, useEffect } from 'react'
+import {register} from "../../actions/user.js"
 import Dialog from '@mui/material/Dialog'
 import {useValue} from '../../context/ContextProvider'
 import { DialogContent, DialogContentText, DialogTitle } from '@mui/material'
@@ -27,19 +28,17 @@ function Login() {
         dispatch({type:'CLOSE_LOGIN'})
     }
     const handleSubmit=(e)=>{
-        e.preventDefault()
-        //testing loading
-        dispatch({type:'START_LOADING'})
-        setTimeout(()=>dispatch({type:'END_LOADING'}),3000)
-
-
-
-        //testing notification feature'
-        const password=passwordRef.current.value
-        const confirmPassword=confirmPasswordRef.current.value
-        if(password!==confirmPassword){
-            return dispatch({type:'UPDATE_ALERT',payload:{open:true,severity:'error',message:'Password does not match'}})
-        }
+       e.preventDefault();
+       const email=emailRef.current.value;
+       const password=passwordRef.current.value;
+       const name=nameRef.current.value;
+       const confirmPassword=confirmPasswordRef.current.value;
+       if(password!==confirmPassword){
+           
+           return dispatch({type:'UPDATE_ALERT',payload:{open:true,message:'Password do not match',severity:'error'}})
+       }
+       //send register request
+       register({name,email,password},dispatch)
     }
     useEffect(()=>{
         isRegister?setTitle('Register'):setTitle('Login')

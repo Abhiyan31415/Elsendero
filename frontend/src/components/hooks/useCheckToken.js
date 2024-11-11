@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useValue } from '../../context/ContextProvider'
-
+import {jwtDecode} from 'jwt-decode';
 function useCheckToken() {
  const {state:{currentUser},dispatch}=useValue()
  useEffect(()=>{

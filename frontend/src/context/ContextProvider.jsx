@@ -21,7 +21,7 @@ const ContextProvider = ({children}) => {
             dispatch({type:'UPDATE_USER',currentUser})
         }
 
-    },[state])
+    },[])
     return (
         <Context.Provider value={{state,dispatch}}> {children} </Context.Provider>
     );
