@@ -9,35 +9,33 @@ import {
     AppBar,
     Toolbar,
 } from "@mui/material";
+import { useRef } from "react";
+import io from "socket.io-client";
 import SendIcon from "@mui/icons-material/Send";
 
 const ChatComponent = () => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
     const [username, setUsername] = useState("testUser1");
-    const [socket, setSocket] = useState(null);
+    const socket = useRef(null);
 
     useEffect(() => {
-        const ws = new WebSocket('ws://localhost:5000');
-        
-        ws.onopen = () => {
-            console.log('Connected to WebSocket');
-        };
+        socket.current = io("http://localhost:5000"); // Adjust to your server URL
 
-        ws.onmessage = (event) => {
-            const message = JSON.parse(event.data);
+        socket.current.on("connect", () => {
+            console.log("Connected to server");
+        });
+
+        socket.current.on("chat message", (message) => {
             setMessages(prevMessages => [...prevMessages, message]);
-        };
+        });
 
-        ws.onerror = (error) => {
-            console.error('WebSocket error:', error);
-        };
-
-        setSocket(ws);
-        fetchMessages();
+        socket.current.on("disconnect", () => {
+            console.log("Disconnected from server");
+        });
 
         return () => {
-            ws.close();
+            socket.current.disconnect();
         };
     }, []);
 
@@ -51,31 +49,11 @@ const ChatComponent = () => {
         }
     };
 
-    const handleSendMessage = async () => {
+    const handleSendMessage = () => {
         if (newMessage.trim()) {
-            const messageData = { 
-                userId: "123", 
-                username, 
-                content: newMessage,
-                timestamp: new Date().toISOString()
-            };
-
-            if (socket?.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify(messageData));
-            }
-
-            try {
-                await fetch('http://localhost:5000/messages', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(messageData),
-                });
-                setNewMessage("");
-            } catch (error) {
-                console.error("Error sending message:", error);
-            }
+            const messageData = { userId: "123", username, content: newMessage };
+            socket.current.emit("chat message", messageData);
+            setNewMessage("");
         }
     };
 
@@ -94,9 +72,9 @@ const ChatComponent = () => {
                 </Toolbar>
             </AppBar>
 
-            <Box sx={{ 
-                flex: 1, 
-                overflow: 'auto', 
+            <Box sx={{
+                flex: 1,
+                overflow: 'auto',
                 bgcolor: 'grey.100',
                 p: 3
             }}>
