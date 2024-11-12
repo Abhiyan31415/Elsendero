@@ -13,11 +13,13 @@ function App() {
 
   return (
     <>
-    <Loading/>
-    <Notification/>
-    <Login/>
-      <NavBar/>
-      <BottomNav/>
+      <Loading />
+      <Notification />
+      <Login />
+      <NavBar />
+      {/* <ChatComponent /> */}
+      <BottomNav />
+
     </>
   )
 }

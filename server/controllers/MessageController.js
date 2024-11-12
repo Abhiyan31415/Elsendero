@@ -1,10 +1,11 @@
-import Message from "../models/Message.js";
+// controllers/messageController.js
+import Message from '../models/Message.js';
 
-// Retrieve the latest 50 messages
+// Get the latest 50 messages
 export const getMessages = async (req, res) => {
     try {
         const messages = await Message.find().sort({ timestamp: -1 }).limit(50);
-        res.status(200).json(messages);
+        res.status(200).json(messages.reverse()); // reverse to show in chronological order
     } catch (error) {
         res.status(500).json({ error: "Unable to retrieve messages" });
     }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
     Box,
     Container,
@@ -9,30 +9,44 @@ import {
     AppBar,
     Toolbar,
 } from "@mui/material";
-import { useRef } from "react";
-import io from "socket.io-client";
 import SendIcon from "@mui/icons-material/Send";
+import axios from "axios";
+import io from "socket.io-client";
 
 const ChatComponent = () => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
-    const [username, setUsername] = useState("testUser1");
+    const [username, setUsername] = useState("");
+    const [userId, setUserId] = useState("");
     const socket = useRef(null);
 
     useEffect(() => {
-        socket.current = io("http://localhost:5000"); // Adjust to your server URL
+        // Retrieve or generate username and userId
+        let currentUser = JSON.parse(localStorage.getItem("currentUser"));
+        if (currentUser && currentUser.name && currentUser.id) {
+            setUsername(currentUser.name);
+            setUserId(currentUser.id);
+        } else {
+            const tempUsername = "User" + Math.floor(Math.random() * 1000);
+            const tempUserId = "user-" + Math.floor(Math.random() * 10000);
+            setUsername(tempUsername);
+            setUserId(tempUserId);
+            currentUser = { name: tempUsername, id: tempUserId };
+            localStorage.setItem("currentUser", JSON.stringify(currentUser));
+        }
+
+        // Connect to the socket server
+        socket.current = io("http://localhost:5000");
 
         socket.current.on("connect", () => {
             console.log("Connected to server");
         });
 
         socket.current.on("chat message", (message) => {
-            setMessages(prevMessages => [...prevMessages, message]);
+            setMessages((prevMessages) => [...prevMessages, message]);
         });
 
-        socket.current.on("disconnect", () => {
-            console.log("Disconnected from server");
-        });
+        fetchMessages();
 
         return () => {
             socket.current.disconnect();
@@ -41,9 +55,8 @@ const ChatComponent = () => {
 
     const fetchMessages = async () => {
         try {
-            const response = await fetch('http://localhost:5000/messages');
-            const data = await response.json();
-            setMessages(data);
+            const response = await axios.get("http://localhost:5000/messages");
+            setMessages(response.data);
         } catch (error) {
             console.error("Error fetching messages:", error);
         }
@@ -51,14 +64,15 @@ const ChatComponent = () => {
 
     const handleSendMessage = () => {
         if (newMessage.trim()) {
-            const messageData = { userId: "123", username, content: newMessage };
+            const messageData = { userId, username, content: newMessage };
             socket.current.emit("chat message", messageData);
-            setNewMessage("");
+            setNewMessage(""); // Clear the input without adding to messages
         }
     };
+    
 
     const handleKeyPress = (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
+        if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             handleSendMessage();
         }
@@ -80,7 +94,7 @@ const ChatComponent = () => {
             }}>
                 <Container maxWidth="md">
                     {messages.map((message, index) => {
-                        const isCurrentUser = message.username === username;
+                        const isCurrentUser = message.userId === userId;
                         return (
                             <Box
                                 key={index}
@@ -95,7 +109,7 @@ const ChatComponent = () => {
                                     sx={{
                                         maxWidth: '70%',
                                         p: 2,
-                                        bgcolor: isCurrentUser ? 'primary.main' : 'background.paper',
+                                        bgcolor: isCurrentUser ? 'primary.main' : 'grey.300',
                                         color: isCurrentUser ? 'primary.contrastText' : 'text.primary'
                                     }}
                                 >
