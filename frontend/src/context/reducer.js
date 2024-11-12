@@ -4,11 +4,15 @@ const reducer=(state,action)=>{
             return {...state,openLogin:true}
         case 'CLOSE_LOGIN':
             return {...state,openLogin:false}
-            case 'START_LOADING':
+        case 'START_LOADING':
                 return {...state,loading:true}
-            case 'END_LOADING':
+        case 'END_LOADING':
                 return {...state,loading:false} 
         case 'UPDATE_USER':
+            if(action.payload===null){
+                localStorage.removeItem('currentUser')
+                return {...state,currentUser:null}
+            }
             localStorage.setItem('currentUser',JSON.stringify(action.payload))
             return {...state,currentUser:action.payload}
         case 'UPDATE_ALERT':

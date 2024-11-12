@@ -51,7 +51,7 @@ const ChatComponent = () => {
         return () => {
             socket.current.disconnect();
         };
-    }, []);
+    }, [username]);
 
     const fetchMessages = async () => {
         try {
