@@ -3,10 +3,11 @@ import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import ProgressList from './progressList/ProgressList';
 import ImagesList from './ImagesList';
+import { useValue } from '../../../context/ContextProvider';
 
 function AddImages({ userId }) {
   const [files, setFiles] = useState([]);
-  
+  const { dispatch } = useValue();
   const onDrop = useCallback((acceptedFiles) => {
     setFiles(acceptedFiles);
   }, []);
@@ -14,10 +15,12 @@ function AddImages({ userId }) {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { 'image/*': [] },
+
   });
 
   const handleUploadComplete = () => {
     setFiles([]);
+    
   };
 
   return (

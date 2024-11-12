@@ -7,7 +7,11 @@ const initialState = {
     loading:false,
     alert:{open:false,severity:'info',message:''},
     profile:{open:false,file:null,photo:''},
-    images:[]
+    images:[],
+    details:{title:'',description:'',price:0},
+    slocation:{lng:0,lat:0},
+    flocation:{lng:0,lat:0},
+    checkpoints:[],
 }
 const Context=createContext(initialState)
 export const useValue=()=>{

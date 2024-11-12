@@ -5,7 +5,7 @@ import { useValue } from '../../../context/ContextProvider';
 
 function ImagesList() {
   const { state: { images, currentUser }, dispatch } = useValue();
-
+console.log(images)
   const handleDelete = (image) => {
     // Implement delete functionality
   };

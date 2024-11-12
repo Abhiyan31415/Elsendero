@@ -1,22 +1,28 @@
 import { Box, Button, Stack, Step, StepButton, Stepper } from '@mui/material'
 import { Container } from '@mui/material'
-import React, { useState } from 'react'
+import React, { useState ,useEffect} from 'react'
 import AddStartLocation from './addLocation/AddStartLocation'
 import AddFinalLocation from './addLocation/AddFinalLocation'
 import AddDetails from './addDetails/AddDetails'
 import AddCheckpoints from './addCheckpoints/AddCheckpoints'
 import AddImages from './addImages/AddImages'
-
+import { useValue } from '../../context/ContextProvider'
+import { Send } from '@mui/icons-material'
+import { createTrail } from '../../actions/trail'
 function AddTrails() {
+  const {state:{images,details,slocation,flocation,checkpoints,currentUser},dispatch}=useValue()
   const [activeStep, setActiveStep] =useState(0)
   const [steps, setSteps] =useState([
     {label:'Start Location',completed:false},
     {label:'Final Location',completed:false},
     {label:'Details',completed:false},
     {label:'Checkpoints',completed:false},
-    {label:'Images',completed:false},
+    {label:'Images',completed:true},
     
   ])
+  const [showSubmit,setShowSubmit]=useState(false)
+
+
   const handleNext=()=>{
     if(activeStep<steps.length-1){
       setActiveStep((prev)=>prev+1)
@@ -38,7 +44,76 @@ function AddTrails() {
   const findUnfinished=()=>{
     return steps.findIndex((step)=>!step.completed)
   }
+  useEffect(() => {
+    if (images.length) {
+      if (!steps[3].completed) setComplete(5, true);
+    } else {
+      if (steps[3].completed) setComplete(5, false);
+    }
+  }, [images]);
+  useEffect(() => {
+    if (details.title.length > 4 && details.description.length > 9) {
+      if (!steps[3].completed) setComplete(2, true);
+    } else {
+      if (steps[3].completed) setComplete(2, false);
+    }
+  }, [details]);
+  useEffect(() => {
+    
+    if (slocation.lng && slocation.lat) {
+      if (!steps[0].completed) setComplete(0, true);
+    } else {
+      if (steps[0].completed) setComplete(0, false);
+    }
+  }, [slocation]);
+  useEffect(() => {
+    console.log(flocation);
+    if (flocation.lng && flocation.lat) {
+      if (!steps[1].completed) setComplete(1, true);
+    } else {
+      if (steps[1].completed) setComplete(1, false);
+    }
+  }, [flocation]);
+  useEffect(() => {
+    if (checkpoints.length > 0) {
+      if (!steps[3].completed) setComplete(3, true);
+    } else {
+      if (steps[3].completed) setComplete(3, false);
+    }
+  }, [checkpoints]);
 
+
+
+  const setComplete = (index, status) => {
+    setSteps((steps) => {
+      steps[index].completed = status;
+      return [...steps];
+    });
+  };
+
+    useEffect(()=>{
+      if(findUnfinished()===-1){
+        if(!showSubmit) {setShowSubmit(true)}
+        }
+      else{
+        if(showSubmit) {setShowSubmit(false)}
+      }
+    },[steps])
+
+  const handleSubmit=()=>{
+    const trail={
+      sloc:[slocation.lng,slocation.lat],
+      floc:[flocation.lng,flocation.lat],
+      checkp:checkpoints.map(({lng,lat})=>[lng,lat]),
+      price:details.price,
+      title:details.title,
+      description:details.description,
+      images
+    }
+    createTrail(trail,currentUser,dispatch)
+
+
+  }
   return (
     <Container
     sx={{my:4}}
@@ -57,7 +132,7 @@ function AddTrails() {
           </Step>
         ))}
       </Stepper>
-      <Box>
+      <Box sx={{pb:7}}>
         {{
           0:<AddStartLocation/>,
           1:<AddFinalLocation/>,
@@ -65,10 +140,10 @@ function AddTrails() {
           3:<AddCheckpoints/>,
           4:<AddImages/>,
         }[activeStep]}
-      </Box>
+      
       <Stack
       direction='row'
-      sx={{pt:2,pb:7,justifyContent:'space-around'}}
+      sx={{pt:2,justifyContent:'space-around'}}
       >
         <Button
         color='inherit'
@@ -85,7 +160,21 @@ function AddTrails() {
           Next
         </Button>
       </Stack>
-
+        {showSubmit&&(
+          <Stack
+          sx={{alignItems:'center'
+          }}
+          >
+            <Button
+            variant ='contained'
+            endIcon={<Send/>}
+            onClick={handleSubmit}
+            >
+              Submit
+            </Button>
+          </Stack>
+        )}
+        </Box>
     </Container>
   )
 }
