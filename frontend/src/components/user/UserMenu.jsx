@@ -12,12 +12,20 @@ const UserMenu = ({anchorUserMenu,setAnchorUserMenu}) => {
         setAnchorUserMenu(null)
     }
 
-   
+    const handleLogout = () => {
+        // Clear local storage if needed
+        localStorage.removeItem("currentUser");
+        // Dispatch logout action
+        dispatch({ type: 'UPDATE_USER', payload:null });
+        setAnchorUserMenu(null);
+        // window.location.reload();
+    };
+    
 
     return (
         <>
         <Menu anchorEl={anchorUserMenu} open={Boolean(anchorUserMenu)} onClose={handleCloseUserMenu} onClick={handleCloseUserMenu}>
-            <MenuItem onClick={()=>dispatch({type:'UPDATE_PROFILE',payload:{open:true,file:null,photoURL:currentUser?.photoURL}})}>
+            <MenuItem onClick={handleLogout}>
             <ListItemIcon>
                 <Settings fontSize='small'/>
 

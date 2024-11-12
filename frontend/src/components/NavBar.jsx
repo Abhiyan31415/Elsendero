@@ -8,6 +8,7 @@ import UserIcons from './user/UserIcons';
 import { useValue } from '../context/ContextProvider';
 
 const NavBar=()=>{
+    
     const {state:{currentUser},
     dispatch
 }=useValue();

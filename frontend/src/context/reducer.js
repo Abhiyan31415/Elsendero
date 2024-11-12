@@ -9,7 +9,12 @@ const reducer=(state,action)=>{
         case 'END_LOADING':
                 return {...state,loading:false} 
         case 'UPDATE_USER':
-            localStorage.setItem('currentUser',JSON.stringify(action.payload))
+            // localStorage.setItem('currentUser',JSON.stringify(action.payload))
+            if (action.payload) {
+                localStorage.setItem('currentUser', JSON.stringify(action.payload));
+            } else {
+                localStorage.removeItem('currentUser');
+            }
             return {...state,currentUser:action.payload}
         case 'UPDATE_ALERT':
             return {...state,alert:action.payload}
