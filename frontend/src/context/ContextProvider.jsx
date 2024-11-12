@@ -12,6 +12,7 @@ const initialState = {
     slocation:{lng:0,lat:0},
     flocation:{lng:0,lat:0},
     checkpoints:[],
+    trails:[],
 }
 const Context=createContext(initialState)
 export const useValue=()=>{
