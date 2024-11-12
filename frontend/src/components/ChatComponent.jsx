@@ -21,37 +21,53 @@ const ChatComponent = () => {
     const socket = useRef(null);
 
     useEffect(() => {
-        // Retrieve or generate username and userId
-        let currentUser = JSON.parse(localStorage.getItem("currentUser"));
-        if (currentUser && currentUser.name && currentUser.id) {
-            setUsername(currentUser.name);
-            setUserId(currentUser.id);
-        } else {
-            const tempUsername = "User" + Math.floor(Math.random() * 1000);
-            const tempUserId = "user-" + Math.floor(Math.random() * 10000);
-            setUsername(tempUsername);
-            setUserId(tempUserId);
-            currentUser = { name: tempUsername, id: tempUserId };
-            localStorage.setItem("currentUser", JSON.stringify(currentUser));
-        }
-
+        // Function to set up user info from localStorage
+        const setupUserInfo = () => {
+            let currentUser = JSON.parse(localStorage.getItem("currentUser"));
+            if (currentUser && currentUser.name && currentUser.id) {
+                setUsername(currentUser.name);
+                setUserId(currentUser.id);
+            } else {
+                const tempUsername = "User" + Math.floor(Math.random() * 1000);
+                const tempUserId = "user-" + Math.floor(Math.random() * 10000);
+                setUsername(tempUsername);
+                setUserId(tempUserId);
+                currentUser = { name: tempUsername, id: tempUserId };
+                localStorage.setItem("currentUser", JSON.stringify(currentUser));
+            }
+        };
+    
+        // Call setupUserInfo initially
+        setupUserInfo();
+    
+        // Listen for changes in localStorage
+        const handleStorageChange = (event) => {
+            if (event.key === "currentUser") {
+                setupUserInfo();
+            }
+        };
+        window.addEventListener("storage", handleStorageChange);
+    
         // Connect to the socket server
         socket.current = io("http://localhost:5000");
-
+    
         socket.current.on("connect", () => {
             console.log("Connected to server");
         });
-
+    
         socket.current.on("chat message", (message) => {
             setMessages((prevMessages) => [...prevMessages, message]);
         });
-
+    
         fetchMessages();
-
+    
         return () => {
             socket.current.disconnect();
+            window.removeEventListener("storage", handleStorageChange);
         };
-    }, [username]);
+    }, []);
+    
+    
 
     const fetchMessages = async () => {
         try {
