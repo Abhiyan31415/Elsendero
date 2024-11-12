@@ -10,6 +10,8 @@ function AddImages({ userId }) {
   const { state:{images},dispatch } = useValue();
   const onDrop = useCallback((acceptedFiles) => {
     setFiles(acceptedFiles);
+    const fileNames = acceptedFiles.map(file => file.name);
+    dispatch({ type: 'UPDATE_IMAGES', payload: fileNames });
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
