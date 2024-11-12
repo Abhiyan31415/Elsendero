@@ -9,7 +9,8 @@ import AddImages from './addImages/AddImages'
 import { useValue } from '../../context/ContextProvider'
 import { Send } from '@mui/icons-material'
 import { createTrail } from '../../actions/trail'
-function AddTrails() {
+
+function AddTrails({setPage}) {
   const {state:{images,details,slocation,flocation,checkpoints,currentUser},dispatch}=useValue()
   const [activeStep, setActiveStep] =useState(0)
   const [steps, setSteps] =useState([
@@ -53,9 +54,9 @@ function AddTrails() {
   }, [images]);
   useEffect(() => {
     if (details.title.length > 4 && details.description.length > 9) {
-      if (!steps[3].completed) setComplete(2, true);
+      if (!steps[2].completed) setComplete(2, true);
     } else {
-      if (steps[3].completed) setComplete(2, false);
+      if (steps[2].completed) setComplete(2, false);
     }
   }, [details]);
   useEffect(() => {
@@ -105,13 +106,13 @@ function AddTrails() {
       currentUser,
       sloc:[slocation.lng,slocation.lat],
       floc:[flocation.lng,flocation.lat],
-      checkp:checkpoints.map(({lng,lat})=>[lng,lat]),
+      checkp:checkpoints.map(({lng,lat,description})=>[lng,lat,description]),
       price:details.price,
       title:details.title,
       description:details.description,
-      images
+      images:images.map((image)=>image)
     }
-    createTrail(trail,currentUser,dispatch)
+    createTrail(trail,currentUser,dispatch,setPage)
 
 
   }

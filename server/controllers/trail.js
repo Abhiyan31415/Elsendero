@@ -4,6 +4,7 @@ export const postTrail = async (req, res) => {
    
     try {
         const {currentUser,sloc,floc,checkp,price,title,description,images} = req.body;
+       console.log(images)
         const trail = new Trail({
             sloc: sloc,
             floc: floc,
