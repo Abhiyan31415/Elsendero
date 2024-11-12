@@ -20,54 +20,64 @@ const ChatComponent = () => {
     const [userId, setUserId] = useState("");
     const socket = useRef(null);
 
+    const initializeUser = () => {
+        const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+        if (currentUser && currentUser.name && currentUser.id) {
+            setUsername(currentUser.name);
+            setUserId(currentUser.id);
+        } else {
+            const tempUsername = "User" + Math.floor(Math.random() * 1000);
+            const tempUserId = "user-" + Math.floor(Math.random() * 10000);
+            const newUser = { name: tempUsername, id: tempUserId };
+            setUsername(tempUsername);
+            setUserId(tempUserId);
+            localStorage.setItem("currentUser", JSON.stringify(newUser));
+        }
+    };
+
     useEffect(() => {
-        // Function to set up user info from localStorage
-        const setupUserInfo = () => {
-            let currentUser = JSON.parse(localStorage.getItem("currentUser"));
-            if (currentUser && currentUser.name && currentUser.id) {
-                setUsername(currentUser.name);
-                setUserId(currentUser.id);
-            } else {
-                const tempUsername = "User" + Math.floor(Math.random() * 1000);
-                const tempUserId = "user-" + Math.floor(Math.random() * 10000);
-                setUsername(tempUsername);
-                setUserId(tempUserId);
-                currentUser = { name: tempUsername, id: tempUserId };
-                localStorage.setItem("currentUser", JSON.stringify(currentUser));
-            }
-        };
-    
-        // Call setupUserInfo initially
-        setupUserInfo();
-    
-        // Listen for changes in localStorage
-        const handleStorageChange = (event) => {
-            if (event.key === "currentUser") {
-                setupUserInfo();
-            }
-        };
-        window.addEventListener("storage", handleStorageChange);
-    
+        initializeUser();
+    }, []);
+
+    useEffect(() => {
         // Connect to the socket server
-        socket.current = io("http://localhost:5000");
-    
+        if (socket.current) {
+            socket.current.disconnect();
+        }
+
+        socket.current = io("http://localhost:5000", {
+            query: { userId, username },
+        });
+
         socket.current.on("connect", () => {
             console.log("Connected to server");
         });
-    
+
         socket.current.on("chat message", (message) => {
             setMessages((prevMessages) => [...prevMessages, message]);
         });
-    
+
         fetchMessages();
-    
+
+        // Cleanup on component unmount
         return () => {
-            socket.current.disconnect();
+            if (socket.current) {
+                socket.current.disconnect();
+            }
+        };
+    }, [userId, username]); // Reconnect if `userId` or `username` changes
+
+    useEffect(() => {
+        const handleStorageChange = () => {
+            initializeUser();
+        };
+
+        window.addEventListener("storage", handleStorageChange);
+
+        return () => {
             window.removeEventListener("storage", handleStorageChange);
         };
     }, []);
-    
-    
 
     const fetchMessages = async () => {
         try {
@@ -82,10 +92,9 @@ const ChatComponent = () => {
         if (newMessage.trim()) {
             const messageData = { userId, username, content: newMessage };
             socket.current.emit("chat message", messageData);
-            setNewMessage(""); // Clear the input without adding to messages
+            setNewMessage("");
         }
     };
-    
 
     const handleKeyPress = (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
