@@ -5,6 +5,7 @@ const fetchData = async ({url, method='POST',token='', body=null},dispatch) => {
     :{'Content-Type':'application/json'}
     body=body?{body:JSON.stringify(body)}:{};
     try{
+        
         const response =await fetch(url,{method,headers,...body})
         const data =await response.json();
         if(!data.success){

@@ -102,6 +102,7 @@ function AddTrails() {
 
   const handleSubmit=()=>{
     const trail={
+      currentUser,
       sloc:[slocation.lng,slocation.lat],
       floc:[flocation.lng,flocation.lat],
       checkp:checkpoints.map(({lng,lat})=>[lng,lat]),

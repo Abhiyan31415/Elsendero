@@ -9,7 +9,7 @@ const trailSchema = new mongoose.Schema({
     price:{type:Number,required:true,default:0},
     title:{type:String,required:true},
     description:{type:String,required:true},
-    images:{type:[String],validate:(v)=>Array.isArray(v) && v.length>0},
+    images:{type:[String],required:false,default:[]},
     uid:{type:String,required:true},
     uName:{type:String,required:true},
     uPhoto:{type:String,default:''},
