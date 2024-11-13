@@ -7,11 +7,11 @@ import cors from 'cors';
 import path from 'path';
 import multer from 'multer';
 import fs from 'fs';
+import { v4 as uuidv4 } from 'uuid'; // Import uuid library
 
 import roomRouter from './routes/roomRouter.js';
 import userRouter from './routes/userRouter.js';
 import messageRouter from './routes/messageRouter.js';
-import Message from './models/Message.js';
 import trialRouter from './routes/trialRouter.js';
 
 dotenv.config();
@@ -33,12 +33,17 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 
 const storage = multer.diskStorage({
-  destination: './uploads/',
+  destination: (req, file, cb) => {
+    const userId = req.body.userId ;
+    const dir = `./uploads/${userId}`;
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);
+  },
   filename: (req, file, cb) => {
-    
-    const userId = req.body.userId || _ID_;
-    cb(null, `${userId}-${Date.now()}-${file.originalname}`);
-    
+    const uniqueName = `${file.originalname}`;
+    cb(null, uniqueName);
   },
 });
 
@@ -53,7 +58,7 @@ function checkFileType(file, cb) {
     cb('Error: Images Only!');
   }
 }
-let _ID_;
+
 const upload = multer({
   storage: storage,
   limits: { fileSize: 1000000 }, // 1MB limit
@@ -64,7 +69,6 @@ const upload = multer({
 
 app.post('/upload', (req, res) => {
   upload(req, res, (err) => {
-    _ID_=req.body.userId
     if (err) {
       res.status(400).json({ message: err });
     } else {
@@ -73,7 +77,7 @@ app.post('/upload', (req, res) => {
       } else {
         res.status(200).json({
           message: 'File uploaded!',
-          filePath: `/uploads/${req.file.filename}`,
+          filePath: `/uploads/${req.body.userId}/${req.file.filename}`,
         });
       }
     }
@@ -104,7 +108,7 @@ app.use((req, res, next) => {
 app.use('/messages', messageRouter);
 app.use('/room', roomRouter);
 app.use('/user', userRouter);
-app.use('/trial', trialRouter); 
+app.use('/trial', trialRouter); // Register trialRouter
 app.get('/', (req, res) => {
   res.json({ message: 'Hello World' });
 });

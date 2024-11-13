@@ -50,10 +50,40 @@ const reducer=(state,action)=>{
         case 'RESET_TRAIL':
             return {...state,images:[],details:{title:'',description:'',price:0},slocation:{lng:0,lat:0},flocation:{lng:0,lat:0},checkpoints:[]}
         case 'UPDATE_TRAILS':
-            return {...state,trails:action.payload}
-
+            return {...state,trails:action.payload,addressFilter:null,priceFilter:150,filteredTrails:state.trails}
+        case 'FILTER_PRICE':
+            return {...state,priceFilter:action.payload,filteredTrails:applyFilter(
+                state.trails,
+                state.addressFilter,
+                action.payload
+            )}
+        case 'FILTER_ADDRESS':
+            return {...state,addressFilter:action.payload,filteredTrails:applyFilter(
+                state.trails,
+                action.payload,
+                state.priceFilter
+            )}
+        case 'CLEAR_ADDRESS':
+            return {...state,addressFilter:null,priceFilter:150}
         default:
             throw new Error('No matched action:')
     }
 }
 export default reducer;
+
+const applyFilter=(trails,address,price)=>{
+    let filteredtrails=trails
+    if(address){
+        const {lng,lat}=address
+        filteredtrails=filteredtrails.filter(trail=>{
+            
+            const lngDiff=lng>trail.sloc[0]?lng-trail.sloc[0]:trail.sloc[0]-lng
+            const latDiff=lat>trail.sloc[1]?lat-trail.sloc[1]:trail.sloc[1]-lat
+            return lngDiff<=1 && latDiff<=1
+        })
+    }
+    if(price<150){
+        filteredtrails=filteredtrails.filter(trail=>trail.price<=price)
+    }
+    return filteredtrails
+}
