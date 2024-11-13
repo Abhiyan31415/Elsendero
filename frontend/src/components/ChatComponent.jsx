@@ -102,6 +102,9 @@ const ChatComponent = () => {
             handleSendMessage();
         }
     };
+    if(!userId){
+        return <div>User Not Logged In </div>
+    }
 
     return (
         <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>

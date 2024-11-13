@@ -13,9 +13,7 @@ const UserMenu = ({anchorUserMenu,setAnchorUserMenu}) => {
     }
 
     const handleLogout = () => {
-        // Clear local storage if needed
         localStorage.removeItem("currentUser");
-        // Dispatch logout action
         dispatch({ type: 'UPDATE_USER', payload:null });
         setAnchorUserMenu(null);
         // window.location.reload();
