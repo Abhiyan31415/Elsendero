@@ -1,14 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-    Box,
-    Container,
-    TextField,
-    IconButton,
-    Paper,
-    Typography,
-    AppBar,
-    Toolbar,
-} from "@mui/material";
+import { Box, Container, TextField, IconButton, Paper, Typography, AppBar, Toolbar } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import axios from "axios";
 import io from "socket.io-client";
@@ -18,20 +9,18 @@ const ChatComponent = () => {
     const [newMessage, setNewMessage] = useState("");
     const [username, setUsername] = useState("");
     const [userId, setUserId] = useState("");
+    const [loading, setLoading] = useState(true);  // Loading state
     const socket = useRef(null);
 
+    // Initialize user data from localStorage
     const initializeUser = () => {
         const currentUser = JSON.parse(localStorage.getItem("currentUser"));
         if (currentUser && currentUser.name && currentUser.id) {
             setUsername(currentUser.name);
             setUserId(currentUser.id);
+            setLoading(false);  // Set loading to false once user data is available
         } else {
-            const tempUsername = "User" + Math.floor(Math.random() * 1000);
-            const tempUserId = "user-" + Math.floor(Math.random() * 10000);
-            const newUser = { name: tempUsername, id: tempUserId };
-            setUsername(tempUsername);
-            setUserId(tempUserId);
-            localStorage.setItem("currentUser", JSON.stringify(newUser));
+            setLoading(false);  // Set loading to false if no user found
         }
     };
 
@@ -40,11 +29,11 @@ const ChatComponent = () => {
     }, []);
 
     useEffect(() => {
-        // Connect to the socket server
-        if (socket.current) {
-            socket.current.disconnect();
+        if (!userId || !username) {
+            return;  // Don't initialize socket if user is not logged in
         }
 
+        // Connect to the socket server
         socket.current = io("http://localhost:5000", {
             query: { userId, username },
         });
@@ -66,18 +55,6 @@ const ChatComponent = () => {
             }
         };
     }, [userId, username]); // Reconnect if `userId` or `username` changes
-
-    useEffect(() => {
-        const handleStorageChange = () => {
-            initializeUser();
-        };
-
-        window.addEventListener("storage", handleStorageChange);
-
-        return () => {
-            window.removeEventListener("storage", handleStorageChange);
-        };
-    }, []);
 
     const fetchMessages = async () => {
         try {
@@ -102,6 +79,15 @@ const ChatComponent = () => {
             handleSendMessage();
         }
     };
+
+    // Show loading screen or redirect if user is not logged in
+    if (loading) {
+        return <div>Loading...</div>;  // You can replace this with a spinner or redirect logic
+    }
+
+    if (!userId) {
+        return <div>User Not Logged In</div>;  // Redirect to login page if user is not logged in
+    }
 
     return (
         <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -165,8 +151,8 @@ const ChatComponent = () => {
                     bgcolor: 'background.paper'
                 }}
             >
-                <Container maxWidth="md">
-                    <Box sx={{ display: 'flex', gap: 2 }}>
+                <Container maxWidth="md" >
+                    <Box sx={{ display: 'flex', gap: 2 ,paddingBottom:"50px",position:"abolute"}}>
                         <TextField
                             fullWidth
                             multiline

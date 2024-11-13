@@ -15,7 +15,7 @@ const TrailsInfo = () => {
         }}
         >
             {
-                filteredRooms.map(room=>(
+                filteredTrails.map(room=>(
                     <Card
                     key={room._id}
                     ></Card>
