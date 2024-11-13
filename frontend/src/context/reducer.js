@@ -4,9 +4,9 @@ const reducer=(state,action)=>{
             return {...state,openLogin:true}
         case 'CLOSE_LOGIN':
             return {...state,openLogin:false}
-            case 'START_LOADING':
+        case 'START_LOADING':
                 return {...state,loading:true}
-            case 'END_LOADING':
+        case 'END_LOADING':
                 return {...state,loading:false} 
         case 'UPDATE_USER':
             // localStorage.setItem('currentUser',JSON.stringify(action.payload))
@@ -44,7 +44,14 @@ const reducer=(state,action)=>{
                         return {
                           ...state,
                           checkpoints: updatedCheckpoints
+        
+
                         };
+        case 'RESET_TRAIL':
+            return {...state,images:[],details:{title:'',description:'',price:0},slocation:{lng:0,lat:0},flocation:{lng:0,lat:0},checkpoints:[]}
+        case 'UPDATE_TRAILS':
+            return {...state,trails:action.payload}
+
         default:
             throw new Error('No matched action:')
     }

@@ -12,6 +12,7 @@ import roomRouter from './routes/roomRouter.js';
 import userRouter from './routes/userRouter.js';
 import messageRouter from './routes/messageRouter.js';
 import Message from './models/Message.js';
+import trialRouter from './routes/trialRouter.js';
 
 dotenv.config();
 const port = process.env.PORT || 5000;
@@ -37,6 +38,7 @@ const storage = multer.diskStorage({
     
     const userId = req.body.userId || _ID_;
     cb(null, `${userId}-${Date.now()}-${file.originalname}`);
+    
   },
 });
 
@@ -102,6 +104,7 @@ app.use((req, res, next) => {
 app.use('/messages', messageRouter);
 app.use('/room', roomRouter);
 app.use('/user', userRouter);
+app.use('/trial', trialRouter); 
 app.get('/', (req, res) => {
   res.json({ message: 'Hello World' });
 });

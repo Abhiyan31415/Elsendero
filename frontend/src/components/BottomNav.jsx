@@ -5,6 +5,7 @@ import ClusterMap from './map/ClusterMap'
 import EventsAdd from './events/EventsAdd'
 import AddTrails from './addTrail/AddTrails'
 import ChatComponent from './ChatComponent'
+import Protected from './protected/Protected'
 const BottomNav = () => {
     const [value,setValue]=useState(0)
     const ref =useRef()
@@ -16,7 +17,7 @@ const BottomNav = () => {
             {{
                 0:<ClusterMap/>,
                 1:<EventsAdd/>,
-                2:<AddTrails/>,
+                2:<Protected><AddTrails setPage={setValue}/></Protected>,
                 3:<ChatComponent/>
 
 

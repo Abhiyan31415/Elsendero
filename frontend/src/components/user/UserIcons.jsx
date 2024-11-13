@@ -8,6 +8,7 @@ import UserMenu from './UserMenu';
 import useCheckToken from '../hooks/useCheckToken';
 const UserIcons = () => {
     useCheckToken()
+    
     const {state:{currentUser}}=useValue();
     const [anchorUserMenu,setAnchorUserMenu]=useState(null);
     return(
@@ -24,7 +25,7 @@ const UserIcons = () => {
             </IconButton>
             <Tooltip title='Open User Settings'>
                 <IconButton size='large' color='inherit' onClick={(e)=>setAnchorUserMenu(e.currentTarget)}>
-                    <Avatar src={currentUser?.photoUrl} alt={currentUser?.name}>
+                    <Avatar src={currentUser.photoUrl} alt={currentUser?.name}>
                         {currentUser?.name?.charAt(0).toUpperCase()}
                     </Avatar>
                 </IconButton>

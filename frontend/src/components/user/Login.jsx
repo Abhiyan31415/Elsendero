@@ -105,7 +105,7 @@ function Login() {
             </DialogActions>
         </form>
         <DialogActions sx={{justifyContent:'left',p:'5px 24px'}}>
-            {isRegister?'Do you have an account? Sign in':'Dont`t have an account? Register now'}
+            {isRegister?'Do you have an account?':'Dont`t have an account?'}
             <Button onClick={()=>setIsRegister(!isRegister)}>
                 {isRegister?'Sign in':'Register'}
             </Button>

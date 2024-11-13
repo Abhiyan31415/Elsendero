@@ -7,9 +7,11 @@ import { useValue } from '../../../context/ContextProvider';
 
 function AddImages({ userId }) {
   const [files, setFiles] = useState([]);
-  const { dispatch } = useValue();
+  const { state:{images},dispatch } = useValue();
   const onDrop = useCallback((acceptedFiles) => {
     setFiles(acceptedFiles);
+    const fileNames = acceptedFiles.map(file => file.name);
+    dispatch({ type: 'UPDATE_IMAGES', payload: fileNames });
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
