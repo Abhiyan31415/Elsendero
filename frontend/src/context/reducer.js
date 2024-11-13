@@ -51,7 +51,8 @@ const reducer=(state,action)=>{
             return {...state,images:[],details:{title:'',description:'',price:0},slocation:{lng:0,lat:0},flocation:{lng:0,lat:0},checkpoints:[]}
         case 'UPDATE_TRAILS':
             return {...state,trails:action.payload}
-
+        case 'FILTER_PRICE':
+            return {...state,priceFilter:action.payload}
         default:
             throw new Error('No matched action:')
     }

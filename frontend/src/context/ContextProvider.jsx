@@ -13,6 +13,7 @@ const initialState = {
     flocation:{lng:0,lat:0},
     checkpoints:[],
     trails:[],
+    priceFilter:150,
 }
 const Context=createContext(initialState)
 export const useValue=()=>{
@@ -22,7 +23,8 @@ export const useValue=()=>{
 
 const ContextProvider = ({children}) => {
     const [state, dispatch] = useReducer(reducer, initialState);
-    const mapRef=useRef()
+    const mapRef=useRef();
+    const conatainerRef=useRef();
     useEffect(()=>{
         const currentUser=JSON.parse(localStorage.getItem('currentUser'))
         if(currentUser){
@@ -31,7 +33,7 @@ const ContextProvider = ({children}) => {
 
     },[])
     return (
-        <Context.Provider value={{state,dispatch,mapRef}}> {children} </Context.Provider>
+        <Context.Provider value={{state,dispatch,mapRef,conatainerRef}}> {children} </Context.Provider>
     );
 }
 export default ContextProvider;
