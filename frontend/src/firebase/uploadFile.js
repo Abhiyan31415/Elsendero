@@ -9,6 +9,7 @@ const uploadFile = async (file, userId) => {
     method: 'POST',
     body: formData,
   });
+  
 
   if (!response.ok) {
     throw new Error('Failed to upload file');

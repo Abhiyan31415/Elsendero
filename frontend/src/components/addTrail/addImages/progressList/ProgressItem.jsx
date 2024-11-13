@@ -8,23 +8,22 @@ import { useValue } from '../../../../context/ContextProvider';
 const ProgressItem = ({ file, userId, onUploadComplete }) => {
   const [imageURL, setImageURL] = useState(null);
   const [progress, setProgress] = useState(0);
-  const {state:{currentUser}}=useValue();
+  const {state:{currentUser,images},dispatch}=useValue();
   
   useEffect(() => {
     const uploadImage = async () => {
       try {
         
         const filePath = await uploadFile(file, currentUser.id);
-        
-        setImageURL(`http://localhost:5000${filePath}`);
+        dispatch({type:'UPDATE_IMAGES',payload:filePath})
+        console.log(images)
         setProgress(100);
-        onUploadComplete();
       } catch (error) {
         console.error(error);
       }
     };
 
-    setImageURL(URL.createObjectURL(file));
+    
     uploadImage();
   }, [file, userId, onUploadComplete]);
 
