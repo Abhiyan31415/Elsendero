@@ -14,6 +14,8 @@ const initialState = {
     checkpoints:[],
     trails:[],
     priceFilter:150,
+    addressFilter:null,
+    filteredTrails:[],
 }
 const Context=createContext(initialState)
 export const useValue=()=>{
@@ -24,7 +26,7 @@ export const useValue=()=>{
 const ContextProvider = ({children}) => {
     const [state, dispatch] = useReducer(reducer, initialState);
     const mapRef=useRef();
-    const conatainerRef=useRef();
+    const containerRef=useRef();
     useEffect(()=>{
         const currentUser=JSON.parse(localStorage.getItem('currentUser'))
         if(currentUser){
@@ -33,7 +35,7 @@ const ContextProvider = ({children}) => {
 
     },[])
     return (
-        <Context.Provider value={{state,dispatch,mapRef,conatainerRef}}> {children} </Context.Provider>
+        <Context.Provider value={{state,dispatch,mapRef,containerRef}}> {children} </Context.Provider>
     );
 }
 export default ContextProvider;

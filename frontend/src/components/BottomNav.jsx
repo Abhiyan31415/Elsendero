@@ -1,11 +1,13 @@
 import { Add, Hiking, LocationOn, Today } from '@mui/icons-material'
 import {BottomNavigation, BottomNavigationAction, Box,Paper} from'@mui/material'
+import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
 import React, { useEffect, useRef, useState } from 'react'
 import ClusterMap from './map/ClusterMap'
 import EventsAdd from './events/EventsAdd'
 import AddTrails from './addTrail/AddTrails'
 import ChatComponent from './ChatComponent'
 import Protected from './protected/Protected'
+import TrailsInfo from './trailsInfo/TrailsInfo'
 const BottomNav = () => {
     const [value,setValue]=useState(0)
     const ref =useRef()
@@ -17,8 +19,9 @@ const BottomNav = () => {
             {{
                 0:<ClusterMap/>,
                 1:<EventsAdd/>,
-                2:<Protected><AddTrails setPage={setValue}/></Protected>,
-                3:<ChatComponent/>
+                2:<TrailsInfo/>,
+                3:<Protected><AddTrails setPage={setValue}/></Protected>,
+                4:<ChatComponent/>
 
 
             }[value]}
@@ -33,7 +36,8 @@ const BottomNav = () => {
             >
                 <BottomNavigationAction label='Map' icon={<LocationOn/>}/>
                 <BottomNavigationAction label='Event' icon={<Today/>}/>
-                <BottomNavigationAction label='Add Trails' icon={<Hiking/>}/>
+                <BottomNavigationAction label='Trails' icon={<Hiking/>}/>
+                <BottomNavigationAction label='Add Trails' icon={<AddLocationAltIcon/>}/>
                 <BottomNavigationAction label='Chat' icon={<Add/>}/>
             </BottomNavigation>
             </Paper>

@@ -5,6 +5,7 @@ import ReactMapGL, { Marker } from 'react-map-gl';
 import SuperCluster from 'supercluster';
 import './cluster.css'
 import { Avatar, Paper, Tooltip } from '@mui/material';
+import GeocoderInput from '../sidebar/GeocoderInput';
 
 const supercluster = new SuperCluster({
   radius:75,
@@ -13,7 +14,7 @@ const supercluster = new SuperCluster({
 
 
 function ClusterMap() {
-  const { state: { trails }, dispatch ,mapRef} = useValue();
+  const { state: {  filteredTrails }, dispatch ,mapRef} = useValue();
 
    const [points,setPoints]=useState([])
    const [clusters,setClusters]=useState([])
@@ -28,7 +29,7 @@ function ClusterMap() {
 
   useEffect(() => {
     // Handle trails update if needed
-    const points = trails.map((trail) => ({
+    const points =  filteredTrails.map((trail) => ({
       type: 'Feature',
       properties: { cluster: false, trailId: trail._id, price:trail.price,
         title:trail.title,
@@ -48,7 +49,7 @@ function ClusterMap() {
       },
     }));
     setPoints(points);
-  }, [trails]);
+  }, [ filteredTrails]);
   useEffect(() => {
     supercluster.load(points);
     setClusters(supercluster.getClusters(bounds, zoom));
@@ -128,6 +129,7 @@ function ClusterMap() {
             )
           })
         }
+        <GeocoderInput/>
       </ReactMapGL>
     </div>
   );

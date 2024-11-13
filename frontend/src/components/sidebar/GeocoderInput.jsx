@@ -1,6 +1,6 @@
-import React from 'react'
+import React,{useEffect} from 'react'
 import { useValue } from '../../context/ContextProvider'
-import { MapboxGeocoder } from 'mapbox-gl'
+import  MapboxGeocoder  from '@mapbox/mapbox-gl-geocoder'
 const ctrl = new MapboxGeocoder({
     marker:false,
     
@@ -18,7 +18,16 @@ const GeocoderInput = () => {
         containerRef.current.appendChild(ctrl.onAdd(mapRef.current.getMap()))
         ctrl.on('result',(e)=>{
             const coords=e.result.geometry.coordinates
+            dispatch({
+                type:'FILTER_ADDRESS',
+                payload:{
+                    lng:coords[0],
+                    lat:coords[1]
+                }
+
+            })
         })
+        ctrl.on('clear',()=>dispatch({type:'CLEAR_ADDRESS'}))
     },[])
   return (
     null
