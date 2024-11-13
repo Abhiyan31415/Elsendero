@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState ,useRef,useEffect} from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
@@ -16,6 +16,11 @@ import Protected from './components/protected/Protected'
 // import Login from './components/user/Login'
 
 function App() {
+  const [value, setValue] = useState(0);
+  const ref = useRef();
+  useEffect(() => {
+    
+  }, [value]);
   return (
     <Router>
       <Loading />
@@ -27,7 +32,7 @@ function App() {
         <Route path="/" element={<Navigate to="/map" replace />} />
         <Route path="/map" element={<ClusterMap />} />
         <Route path="/events" element={<EventsAdd />} />
-        <Route path="/add-trails" element={<Protected><AddTrails /></Protected>} />
+        <Route path="/add-trails" element={<Protected><AddTrails setPage={setValue}/></Protected>} />
         <Route path="/chat" element={<ChatComponent />} />
         <Route path="/login" element={<Login />} />
       </Routes>
