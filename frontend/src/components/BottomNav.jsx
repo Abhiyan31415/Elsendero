@@ -1,43 +1,53 @@
 import { Add, Hiking, LocationOn, Today } from '@mui/icons-material'
-import {BottomNavigation, BottomNavigationAction, Box,Paper} from'@mui/material'
+import { BottomNavigation, BottomNavigationAction, Box, Paper } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
-import ClusterMap from './map/ClusterMap'
-import EventsAdd from './events/EventsAdd'
-import AddTrails from './addTrail/AddTrails'
-import ChatComponent from './ChatComponent'
-import Protected from './protected/Protected'
+import { useNavigate } from 'react-router-dom'
+
 const BottomNav = () => {
-    const [value,setValue]=useState(0)
-    const ref =useRef()
-    useEffect(()=>{
-        ref.current.ownerDocument.body.scrollTop=0;
-    })
-    return(
+    const [value, setValue] = useState(0)
+    const ref = useRef()
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        ref.current.ownerDocument.body.scrollTop = 0
+    }, [value])
+
+    const handleNavigation = (newValue) => {
+        setValue(newValue)
+        switch (newValue) {
+            case 0:
+                navigate("/map")
+                break
+            case 1:
+                navigate("/events")
+                break
+            case 2:
+                navigate("/add-trails")
+                break
+            case 3:
+                navigate("/chat")
+                break
+            default:
+                break
+        }
+    }
+
+    return (
         <Box ref={ref}>
-            {{
-                0:<ClusterMap/>,
-                1:<EventsAdd/>,
-                2:<Protected><AddTrails setPage={setValue}/></Protected>,
-                3:<ChatComponent/>
-
-
-            }[value]}
-            <Paper
-            elevation={3}
-            sx={{position:'fixed',bottom:0,left:0,right:0,zIndex:2}}
-            >
-            <BottomNavigation
-            showLabels
-            value={value}
-            onChange={(e,newValue)=>setValue(newValue)}
-            >
-                <BottomNavigationAction label='Map' icon={<LocationOn/>}/>
-                <BottomNavigationAction label='Event' icon={<Today/>}/>
-                <BottomNavigationAction label='Add Trails' icon={<Hiking/>}/>
-                <BottomNavigationAction label='Chat' icon={<Add/>}/>
-            </BottomNavigation>
+            <Paper elevation={3} sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 2 }}>
+                <BottomNavigation
+                    showLabels
+                    value={value}
+                    onChange={(e, newValue) => handleNavigation(newValue)}
+                >
+                    <BottomNavigationAction label='Map' icon={<LocationOn />} />
+                    <BottomNavigationAction label='Event' icon={<Today />} />
+                    <BottomNavigationAction label='Add Trails' icon={<Hiking />} />
+                    <BottomNavigationAction label='Chat' icon={<Add />} />
+                </BottomNavigation>
             </Paper>
         </Box>
     )
 }
-export default BottomNav;
+
+export default BottomNav
