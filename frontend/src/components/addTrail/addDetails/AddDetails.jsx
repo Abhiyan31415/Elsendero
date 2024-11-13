@@ -41,7 +41,7 @@ function AddDetails() {
       sx={{width:'7ch !important'}}
       variant='standard'
       InputProps={{
-        startAdorement:<InputAdornment position='start'>$</InputAdornment>
+        startAdornment:(<InputAdornment position='start'> $ </InputAdornment>)
       }}
       inputProps={{type:'number',min:1,max:100}}
       value={price}

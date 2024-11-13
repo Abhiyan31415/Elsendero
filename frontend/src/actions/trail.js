@@ -17,6 +17,7 @@ export const createTrail =async(trail,currentUser,dispatch,setPage)=>{
 };
 export const getTrails =async(dispatch)=>{
     const result =await fetchData({url,method:'GET'},dispatch)
+
     if(result){
         dispatch({type:'UPDATE_TRAILS',payload:result})
     }

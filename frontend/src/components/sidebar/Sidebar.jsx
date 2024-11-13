@@ -1,6 +1,8 @@
 import React from 'react'
 import { Box, Drawer, IconButton, Typography ,styled} from '@mui/material'
 import { ChevronLeft } from '@mui/icons-material'
+import PriceSlider from './PriceSlider'
+import { useValue } from '../../context/ContextProvider'
 
 const DrawerHeader=styled('div')(({theme})=>({
     display:'flex',
@@ -11,6 +13,7 @@ const DrawerHeader=styled('div')(({theme})=>({
 }))
 
 const Sidebar = ({isOpen,setIsOpen}) => {
+    const {containerRef}=useValue()
   return (
     <Drawer
     variant='persistent'
@@ -26,9 +29,10 @@ const Sidebar = ({isOpen,setIsOpen}) => {
             </IconButton>
         </DrawerHeader>
     <Box
-    sx={{width:240,p:3}}
+    sx={{width:400,p:3}}
     >
-
+        <Box ref={containerRef}></Box>
+        <PriceSlider/>
     </Box>
     </Drawer>
   )

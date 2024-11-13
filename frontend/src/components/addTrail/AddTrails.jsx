@@ -18,7 +18,7 @@ function AddTrails({setPage}) {
     {label:'Final Location',completed:false},
     {label:'Details',completed:false},
     {label:'Checkpoints',completed:false},
-    {label:'Images',completed:true},
+    {label:'Images',completed:false},
     
   ])
   const [showSubmit,setShowSubmit]=useState(false)
@@ -45,13 +45,15 @@ function AddTrails({setPage}) {
   const findUnfinished=()=>{
     return steps.findIndex((step)=>!step.completed)
   }
+
   useEffect(() => {
-    if (images.length) {
-      if (!steps[3].completed) setComplete(5, true);
+    
+    if (images.length>0) {
+      if (!steps[4].completed) setComplete(4, true);
     } else {
-      if (steps[3].completed) setComplete(5, false);
+      if (steps[4].completed) setComplete(4, false);
     }
-  }, [images]);
+  }, [images.length]);
   useEffect(() => {
     if (details.title.length > 4 && details.description.length > 9) {
       if (!steps[2].completed) setComplete(2, true);
