@@ -151,8 +151,8 @@ const ChatComponent = () => {
                     bgcolor: 'background.paper'
                 }}
             >
-                <Container maxWidth="md">
-                    <Box sx={{ display: 'flex', gap: 2 }}>
+                <Container maxWidth="md" >
+                    <Box sx={{ display: 'flex', gap: 2 ,paddingBottom:"50px",position:"abolute"}}>
                         <TextField
                             fullWidth
                             multiline
