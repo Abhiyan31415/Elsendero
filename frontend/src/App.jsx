@@ -13,7 +13,6 @@ import ClusterMap from './components/map/ClusterMap'
 import EventsAdd from './components/events/EventsAdd'
 import AddTrails from './components/addTrail/AddTrails'
 import Protected from './components/protected/Protected'
-// import Login from './components/user/Login'
 
 function App() {
   return (
@@ -29,7 +28,6 @@ function App() {
         <Route path="/events" element={<EventsAdd />} />
         <Route path="/add-trails" element={<Protected><AddTrails /></Protected>} />
         <Route path="/chat" element={<ChatComponent />} />
-        <Route path="/login" element={<Login />} />
       </Routes>
 
       <BottomNav />
