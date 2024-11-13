@@ -25,3 +25,11 @@ export const postTrail = async (req, res) => {
     
 
 }
+export const getTrails = async (req, res) => {
+    try {
+        const trails = await Trail.find().sort({id:-1});
+        res.status(200).json({success: true, result: trails});
+    } catch (error) {
+        res.status(400).json({success: false, message: error.message});
+    }
+}
