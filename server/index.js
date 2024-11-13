@@ -91,8 +91,15 @@ app.get('/images', (req, res) => {
 
 app.use('/uploads', express.static('uploads'));
 
+//pp.use('/images', express.static(path.join(__dirname, 'uploads')));
+
+app.get('/api/images/:filename', (req, res) => {
+  const filename = req.params.filename;
+  res.sendFile(path.join(__dirname, 'uploads', filename));
+});
 // CORS setup
 app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', 'file://');
   res.setHeader('Access-Control-Allow-Origin', process.env.CLIENT_URL || '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH');
   res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,Authorization');
