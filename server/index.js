@@ -13,6 +13,7 @@ import userRouter from './routes/userRouter.js';
 import messageRouter from './routes/messageRouter.js';
 import Message from './models/Message.js';
 import trialRouter from './routes/trialRouter.js';
+import eventRoutes from './routes/eventRoutes.js';
 
 dotenv.config();
 const port = process.env.PORT || 5000;
@@ -105,11 +106,12 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,Authorization');
   next();
 });
-
+app.use('/api/events', eventRoutes);
 app.use('/messages', messageRouter);
 app.use('/room', roomRouter);
 app.use('/user', userRouter);
 app.use('/trial', trialRouter); 
+
 app.get('/', (req, res) => {
   res.json({ message: 'Hello World' });
 });
