@@ -4,15 +4,30 @@ import { useDropzone } from 'react-dropzone';
 import ProgressList from './progressList/ProgressList';
 import ImagesList from './ImagesList';
 import { useValue } from '../../../context/ContextProvider';
-
+import uploadFile from '../../../firebase/uploadFile';
 function AddImages({ userId }) {
   const [files, setFiles] = useState([]);
-  const { state:{images},dispatch } = useValue();
+  const { state:{images,currentUser},dispatch } = useValue();
   const onDrop = useCallback((acceptedFiles) => {
     setFiles(acceptedFiles);
-    const fileNames = acceptedFiles.map(file => file.name);
-    dispatch({ type: 'UPDATE_IMAGES', payload: fileNames });
-  }, []);
+    const uploadPromises = acceptedFiles.map(async (file) => {
+      try {
+        const filePath = await uploadFile(file, currentUser.id);
+        dispatch({ type: 'UPDATE_IMAGES', payload: filePath });
+        console.log(images);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+
+    Promise.all(uploadPromises)
+      .then(() => {
+        console.log('All files uploaded successfully');
+      })
+      .catch((error) => {
+        console.error('Error uploading files:', error);
+      });
+  }, [currentUser, dispatch]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,

@@ -91,11 +91,11 @@ const ChatComponent = () => {
 
     return (
         <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-            <AppBar position="static">
+            {/* <AppBar position="static">
                 <Toolbar>
                     <Typography variant="h6">Chat Room</Typography>
                 </Toolbar>
-            </AppBar>
+            </AppBar> */}
 
             <Box sx={{
                 flex: 1,
@@ -120,7 +120,7 @@ const ChatComponent = () => {
                                     sx={{
                                         maxWidth: '70%',
                                         p: 2,
-                                        bgcolor: isCurrentUser ? 'primary.main' : 'grey.300',
+                                        bgcolor: isCurrentUser ? '#06402b' : 'grey.300',
                                         color: isCurrentUser ? 'primary.contrastText' : 'text.primary'
                                     }}
                                 >
@@ -129,7 +129,7 @@ const ChatComponent = () => {
                                         component="div"
                                         sx={{
                                             mb: 0.5,
-                                            color: isCurrentUser ? 'primary.light' : 'text.secondary'
+                                            color: isCurrentUser ? 'yellow' : 'blue'
                                         }}
                                     >
                                         {message.username}
@@ -168,7 +168,7 @@ const ChatComponent = () => {
                             color="primary"
                             onClick={handleSendMessage}
                             sx={{
-                                bgcolor: 'primary.main',
+                                bgcolor: '#06402b',
                                 color: 'white',
                                 '&:hover': {
                                     bgcolor: 'primary.dark',

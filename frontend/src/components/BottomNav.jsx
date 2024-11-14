@@ -1,4 +1,5 @@
 import { Add, Hiking, LocationOn, Today } from '@mui/icons-material'
+import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
 import { BottomNavigation, BottomNavigationAction, Box, Paper } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -22,9 +23,12 @@ const BottomNav = () => {
                 navigate("/events")
                 break
             case 2:
-                navigate("/add-trails")
+                navigate("/trail")
                 break
             case 3:
+                navigate("/add-trails")
+                break
+            case 4:
                 navigate("/chat")
                 break
             default:
@@ -42,7 +46,8 @@ const BottomNav = () => {
                 >
                     <BottomNavigationAction label='Map' icon={<LocationOn />} />
                     <BottomNavigationAction label='Event' icon={<Today />} />
-                    <BottomNavigationAction label='Add Trails' icon={<Hiking />} />
+                    <BottomNavigationAction label='Trail' icon={<Hiking />} />
+                    <BottomNavigationAction label='Add Trails' icon={<AddLocationAltIcon  />} />
                     <BottomNavigationAction label='Chat' icon={<Add />} />
                 </BottomNavigation>
             </Paper>

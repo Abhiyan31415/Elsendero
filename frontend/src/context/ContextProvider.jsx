@@ -16,6 +16,7 @@ const initialState = {
     priceFilter:150,
     addressFilter:null,
     filteredTrails:[],
+    trail:null,
 }
 const Context=createContext(initialState)
 export const useValue=()=>{

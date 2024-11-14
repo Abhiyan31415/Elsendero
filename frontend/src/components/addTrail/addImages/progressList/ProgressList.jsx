@@ -14,7 +14,7 @@ const ProgressList = ({ files, userId, onUploadComplete }) => {
       }}
     >
       {files.map((file, index) => (
-        <ProgressItem file={file} key={index} userId={userId} onUploadComplete={onUploadComplete} />
+        <ProgressItem file={file} key={index} userId={userId}/>
       ))}
     </ImageList>
   );
