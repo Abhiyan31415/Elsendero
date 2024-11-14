@@ -13,7 +13,7 @@ function AddImages({ userId }) {
     const uploadPromises = acceptedFiles.map(async (file) => {
       try {
         const filePath = await uploadFile(file, currentUser.id);
-        //dispatch({ type: 'UPDATE_IMAGES', payload: filePath });
+        dispatch({ type: 'UPDATE_IMAGES', payload: filePath });
         console.log(images);
       } catch (error) {
         console.error(error);

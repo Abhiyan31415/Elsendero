@@ -10,12 +10,13 @@ import {
   } from '@mui/material';
   import { useValue } from '../../context/ContextProvider';
   import { StarBorder } from '@mui/icons-material';
-  import path from 'path';
+
   
   const TrailsInfo = () => {
     const {
-      state: { filteredTrails },
+      state: { filteredTrails },dispatch
     } = useValue();
+   
     return (
       <Container>
         <ImageList
@@ -23,13 +24,13 @@ import {
           sx={{
             mb: 8,
             gridTemplateColumns:
-              'repeat(auto-fill, minmax(280px, 1fr))!important',
+              'repeat(auto-fill, minmax(250px, 1fr))!important',
           }}
         >
           {filteredTrails.map((trail) => (
             console.log(`${root}${trail.images[0][0]}`),
             <Card key={trail._id}>
-              <ImageListItem sx={{ height: '100% !important', minHeight:'200px' }}>
+              <ImageListItem sx={{ height: '100% !important'}}>
                 <ImageListItemBar
                   sx={{
                     background:
@@ -45,10 +46,11 @@ import {
                 />
                 
                 <img
-                  src={`/api/images/${trail.images[0][0]}`}
+                  src={trail.images[0][0]}
                   alt={trail.title}
                   loading="lazy"
                   style={{ cursor: 'pointer' }}
+                  onClick={() => dispatch({ type: 'UPDATE_TRAIL', payload: trail })}
                 />
                 <ImageListItemBar
                   title={trail.title}
