@@ -37,7 +37,6 @@ function App() {
         <Route path='/trail' element={<TrailsInfo/>}/>
         <Route path="/add-trails" element={<Protected><AddTrails setPage={setValue}/></Protected>} />
         <Route path="/chat" element={<ChatComponent />} />
-        <Route path="/login" element={<Login />} />
       </Routes>
 
       <BottomNav />
