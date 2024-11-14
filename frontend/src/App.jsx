@@ -14,6 +14,7 @@ import EventsAdd from './components/events/EventsAdd'
 import AddTrails from './components/addTrail/AddTrails'
 import Protected from './components/protected/Protected'
 import TrailsInfo from './components/trailsInfo/TrailsInfo'
+import TrailInfo from './components/trailsInfo/TrailInfo'
 // import Login from './components/user/Login'
 
 function App() {
@@ -28,7 +29,7 @@ function App() {
       <Notification />
       <Login />
       <NavBar />
-      
+      <TrailInfo/>
       <Routes>
         <Route path="/" element={<Navigate to="/map" replace />} />
         <Route path="/map" element={<ClusterMap />} />

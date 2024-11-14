@@ -6,5 +6,13 @@ export default defineConfig({
   plugins: [react()],
   define:{
     'process.cwd': () => '"/"',
+  },
+  server: {
+    proxy: {
+      '/uploads': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      }
+    }
   }
 })

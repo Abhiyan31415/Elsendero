@@ -15,7 +15,7 @@ const ProgressItem = ({ file, userId, onUploadComplete }) => {
       try {
         
         const filePath = await uploadFile(file, currentUser.id);
-        dispatch({type:'UPDATE_IMAGES',payload:filePath})
+        //dispatch({type:'UPDATE_IMAGES',payload:filePath})
         console.log(images)
         setProgress(100);
       } catch (error) {
