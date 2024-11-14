@@ -10,6 +10,7 @@ import { useValue } from '../../context/ContextProvider'
 
 const PopupTrail = ({popupInfo}) => {
     const {title,description,price,images,sloca,floc,checkpoints}=popupInfo
+    console.log(popupInfo)
     const {dispatch}=useValue()
     return (
     <Card
