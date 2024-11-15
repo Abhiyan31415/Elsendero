@@ -58,7 +58,7 @@ const ChatComponent = ({ eventId }) => {
 
     const handleSendMessage = () => {
         if (newMessage.trim()) {
-            const messageData = { userId, username, content: newMessage };
+            const messageData = { eventId, userId, username, content: newMessage };
             socket.current.emit("chat message", messageData);
             setNewMessage("");
         }
