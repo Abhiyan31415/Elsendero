@@ -29,12 +29,12 @@ const NavBar = () => {
                             </IconButton>
                         </Box>
 
-                        <Typography variant='h6' component='h1' noWrap sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-                            Gantabya
+                        <Typography variant='h5'  component='h1' noWrap sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+                        गन्तव्य 
                         </Typography>
 
-                        <Typography variant='h6' component='h1' noWrap sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-                            Gantabya
+                        <Typography variant='h5' component='h1' noWrap sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
+                        गन्तव्य 
                         </Typography>
                         {!currentUser ? (
                             <Button

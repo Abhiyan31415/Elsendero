@@ -9,8 +9,8 @@ import GeocoderInput from '../sidebar/GeocoderInput';
 import PopupTrail from './PopupTrail';
 
 const supercluster = new SuperCluster({
-  radius:75,
-  maxZoom:20
+  radius: 75,
+  maxZoom: 20
 });
 
 function ClusterMap() {
@@ -22,6 +22,7 @@ function ClusterMap() {
   const [bounds, setBounds] = useState([-180, -85, 180, 85]);
   const [zoom, setZoom] = useState(0);
   const [popupInfo, setPopupInfo] = useState(null);
+  const [routeBusyness, setRouteBusyness] = useState(null);
 
   useEffect(() => {
     getTrails(dispatch);
@@ -63,9 +64,32 @@ function ClusterMap() {
     }
   }, [mapRef?.current]);
 
-  const handlePopupOpen = (properties) => {
+  const checkRouteBusyness = async (coordinates) => {
+    try {
+      // This is a mock API call - replace with your actual busyness API endpoint
+      const response = await fetch('/api/route-busyness', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ coordinates }),
+      });
+      
+      const data = await response.json();
+      return {
+        level: data.busynessLevel, // 0-100
+        status: data.busynessLevel < 30 ? 'Low' : data.busynessLevel < 70 ? 'Moderate' : 'High',
+        color: data.busynessLevel < 30 ? '#4CAF50' : data.busynessLevel < 70 ? '#FFC107' : '#F44336'
+      };
+    } catch (error) {
+      console.error('Error checking route busyness:', error);
+      return null;
+    }
+  };
+
+  const handlePopupOpen = async (properties) => {
     setPopupInfo(properties);
-    fetchRouteData(properties);
+    await fetchRouteData(properties);
   };
 
   const fetchRouteData = async (prop) => {
@@ -84,14 +108,19 @@ function ClusterMap() {
         `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}?geometries=geojson&overview=full&access_token=pk.eyJ1IjoiYWJoaXlhbjEyMTIiLCJhIjoiY20zNnQwNWJnMGFsbzJqc2wxMTh2a2JjaCJ9.QY9Xj_GfNoO9yu9nkiMb1g`
       );
       const data = await response.json();
-      console.log(data);
+      
       if (data.routes && data.routes[0]) {
         setRouteGeometry({
           type: 'Feature',
           properties: {},
           geometry: data.routes[0].geometry,
         });
+        
+        // Check route busyness after getting route geometry
+        const busynessData = await checkRouteBusyness(data.routes[0].geometry.coordinates);
+        setRouteBusyness(busynessData);
       }
+
       const checkpointsData = {
         type: 'FeatureCollection',
         features: prop.checkpoints.map((checkpoint, index) => ({
@@ -105,7 +134,6 @@ function ClusterMap() {
       console.error('Error fetching route:', error);
       return null;
     }
-    
   };
 
   return (
@@ -117,7 +145,6 @@ function ClusterMap() {
         ref={mapRef}
         onZoomEnd={(e) => setZoom(Math.round(e.viewState.zoom))}
       >
-        {/* Add markers or other map elements here */}
         {clusters.map((cluster) => {
           const { cluster: isCluster, point_count } = cluster.properties;
           const [longitude, latitude] = cluster.geometry.coordinates;
@@ -159,7 +186,7 @@ function ClusterMap() {
                   src={cluster.properties.uPhoto}
                   component={Paper}
                   elevation={2}
-                  onClick={() => handlePopupOpen(cluster.properties)}
+                  onMouseEnter={() => handlePopupOpen(cluster.properties)}
                 />
               </Tooltip>
             </Marker>
@@ -173,10 +200,43 @@ function ClusterMap() {
             maxWidth="auto"
             closeOnClick={false}
             focusAfterOpen={false}
-            onClose={() => setPopupInfo(null)}
+            onClose={() => {
+              setPopupInfo(null);
+              setRouteBusyness(null);
+            }}
           >
             <PopupTrail {...{ popupInfo }} />
-            {/* Fetch route data and render it here */}
+            {routeBusyness && (
+              <div style={{ 
+                padding: '8px', 
+                marginTop: '8px',
+                backgroundColor: routeBusyness.color + '20',
+                borderRadius: '4px',
+                border: `1px solid ${routeBusyness.color}`
+              }}>
+                <div style={{ 
+                  marginBottom: '4px',
+                  color: routeBusyness.color,
+                  fontWeight: 'bold'
+                }}>
+                  Route Busyness: {routeBusyness.status}
+                </div>
+                <div style={{ 
+                  width: '100%',
+                  height: '4px',
+                  backgroundColor: '#e0e0e0',
+                  borderRadius: '2px'
+                }}>
+                  <div style={{
+                    width: `${routeBusyness.level}%`,
+                    height: '100%',
+                    backgroundColor: routeBusyness.color,
+                    borderRadius: '2px',
+                    transition: 'width 0.3s ease'
+                  }} />
+                </div>
+              </div>
+            )}
             {popupInfo.sloc && popupInfo.floc && (
               <Source
                 id="route"
@@ -187,13 +247,13 @@ function ClusterMap() {
                   id="route-layer"
                   type="line"
                   paint={{
-                    'line-color': '#3887be',
+                    'line-color': routeBusyness ? routeBusyness.color : '#3887be',
                     'line-width': 4,
                   }}
                 />
               </Source>
             )}
-             {checkpointData && (
+            {checkpointData && (
               <Source id="checkpoints" type="geojson" data={checkpointData}>
                 <Layer
                   id="checkpoint-layer"
