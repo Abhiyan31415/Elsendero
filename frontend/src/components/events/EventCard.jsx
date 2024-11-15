@@ -36,7 +36,7 @@ function EventCard() {
   const handleCardClick = (event) => {
     console.log("Selected Event:", event); // Debugging
     setSelectedEvent(event);
-};
+  };
 
   // Handle adding a new event
   const handleAddEvent = async () => {

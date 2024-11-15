@@ -5,6 +5,7 @@ import ReactMapGL, { Marker, Popup, NavigationControl, GeolocateControl, Source,
 import SuperCluster from 'supercluster';
 import './cluster.css'
 import { Avatar, Paper, Tooltip } from '@mui/material';
+import { Typography } from '@mui/material';
 import GeocoderInput from '../sidebar/GeocoderInput';
 import PopupTrail from './PopupTrail';
 
@@ -22,7 +23,7 @@ function ClusterMap() {
   const [bounds, setBounds] = useState([-180, -85, 180, 85]);
   const [zoom, setZoom] = useState(0);
   const [popupInfo, setPopupInfo] = useState(null);
-  const [routeBusyness, setRouteBusyness] = useState(null);
+  const [selectedCheckpoint, setSelectedCheckpoint] = useState(null);
 
   useEffect(() => {
     getTrails(dispatch);
@@ -64,32 +65,25 @@ function ClusterMap() {
     }
   }, [mapRef?.current]);
 
-  const checkRouteBusyness = async (coordinates) => {
-    try {
-      // This is a mock API call - replace with your actual busyness API endpoint
-      const response = await fetch('/api/route-busyness', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ coordinates }),
-      });
-      
-      const data = await response.json();
-      return {
-        level: data.busynessLevel, // 0-100
-        status: data.busynessLevel < 30 ? 'Low' : data.busynessLevel < 70 ? 'Moderate' : 'High',
-        color: data.busynessLevel < 30 ? '#4CAF50' : data.busynessLevel < 70 ? '#FFC107' : '#F44336'
-      };
-    } catch (error) {
-      console.error('Error checking route busyness:', error);
-      return null;
-    }
+  const handlePopupOpen = (properties) => {
+    setPopupInfo(properties);
+    fetchRouteData(properties);
   };
 
-  const handlePopupOpen = async (properties) => {
-    setPopupInfo(properties);
-    await fetchRouteData(properties);
+  const handleCheckpointClick = (event) => {
+    const features = mapRef.current.getMap().queryRenderedFeatures(event.point, {
+      layers: ['checkpoint-layer']
+    });
+    
+    if (features.length > 0) {
+      const clickedCheckpoint = features[0];
+      setSelectedCheckpoint({
+        description: clickedCheckpoint.properties.description,
+        coordinates: clickedCheckpoint.geometry.coordinates
+      });
+    } else {
+      setSelectedCheckpoint(null);
+    }
   };
 
   const fetchRouteData = async (prop) => {
@@ -108,24 +102,18 @@ function ClusterMap() {
         `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}?geometries=geojson&overview=full&access_token=pk.eyJ1IjoiYWJoaXlhbjEyMTIiLCJhIjoiY20zNnQwNWJnMGFsbzJqc2wxMTh2a2JjaCJ9.QY9Xj_GfNoO9yu9nkiMb1g`
       );
       const data = await response.json();
-      
       if (data.routes && data.routes[0]) {
         setRouteGeometry({
           type: 'Feature',
           properties: {},
           geometry: data.routes[0].geometry,
         });
-        
-        // Check route busyness after getting route geometry
-        const busynessData = await checkRouteBusyness(data.routes[0].geometry.coordinates);
-        setRouteBusyness(busynessData);
       }
-
       const checkpointsData = {
         type: 'FeatureCollection',
         features: prop.checkpoints.map((checkpoint, index) => ({
           type: 'Feature',
-          properties: { description: `Checkpoint ${index + 1}` },
+          properties: { description: `${checkpoint[2]}` },
           geometry: { type: 'Point', coordinates: [checkpoint[0], checkpoint[1]] }
         }))
       };
@@ -144,7 +132,9 @@ function ClusterMap() {
         mapStyle="mapbox://styles/mapbox/streets-v11"
         ref={mapRef}
         onZoomEnd={(e) => setZoom(Math.round(e.viewState.zoom))}
+        onClick={handleCheckpointClick}
       >
+        {/* Existing markers and clusters code... */}
         {clusters.map((cluster) => {
           const { cluster: isCluster, point_count } = cluster.properties;
           const [longitude, latitude] = cluster.geometry.coordinates;
@@ -200,43 +190,9 @@ function ClusterMap() {
             maxWidth="auto"
             closeOnClick={false}
             focusAfterOpen={false}
-            onClose={() => {
-              setPopupInfo(null);
-              setRouteBusyness(null);
-            }}
+            onClose={() => setPopupInfo(null)}
           >
             <PopupTrail {...{ popupInfo }} />
-            {routeBusyness && (
-              <div style={{ 
-                padding: '8px', 
-                marginTop: '8px',
-                backgroundColor: routeBusyness.color + '20',
-                borderRadius: '4px',
-                border: `1px solid ${routeBusyness.color}`
-              }}>
-                <div style={{ 
-                  marginBottom: '4px',
-                  color: routeBusyness.color,
-                  fontWeight: 'bold'
-                }}>
-                  Route Busyness: {routeBusyness.status}
-                </div>
-                <div style={{ 
-                  width: '100%',
-                  height: '4px',
-                  backgroundColor: '#e0e0e0',
-                  borderRadius: '2px'
-                }}>
-                  <div style={{
-                    width: `${routeBusyness.level}%`,
-                    height: '100%',
-                    backgroundColor: routeBusyness.color,
-                    borderRadius: '2px',
-                    transition: 'width 0.3s ease'
-                  }} />
-                </div>
-              </div>
-            )}
             {popupInfo.sloc && popupInfo.floc && (
               <Source
                 id="route"
@@ -247,28 +203,82 @@ function ClusterMap() {
                   id="route-layer"
                   type="line"
                   paint={{
-                    'line-color': routeBusyness ? routeBusyness.color : '#3887be',
+                    'line-color': '#3887be',
                     'line-width': 4,
                   }}
                 />
               </Source>
             )}
             {checkpointData && (
-              <Source id="checkpoints" type="geojson" data={checkpointData}>
-                <Layer
-                  id="checkpoint-layer"
-                  type="circle"
-                  paint={{
-                    'circle-radius': 6,
-                    'circle-color': '#FF0000',
-                    'circle-stroke-width': 1,
-                    'circle-stroke-color': '#fff'
-                  }}
-                />
-              </Source>
+              <>
+                <Source id="checkpoints" type="geojson" data={checkpointData}>
+                  <Layer
+                    id="checkpoint-layer"
+                    type="circle"
+                    paint={{
+                      'circle-radius': 6,
+                      'circle-color': '#FFFF00',
+                      'circle-stroke-width': 1,
+                      'circle-stroke-color': '#fff'
+                    }}
+                  />
+                  <Layer
+                    id="checkpoint-label"
+                    type="symbol"
+                    layout={{
+                      'text-field': ['get', 'description'],
+                      'text-offset': [0, -1.5],
+                      'text-anchor': 'bottom',
+                      'text-size': 12
+                    }}
+                    paint={{
+                      'text-color': '#000',
+                      'text-halo-color': '#fff',
+                      'text-halo-width': 1
+                    }}
+                  />
+                </Source>
+              </>
             )}
           </Popup>
         )}
+         {selectedCheckpoint && (
+          <Popup
+            longitude={selectedCheckpoint.coordinates[0]}
+            latitude={selectedCheckpoint.coordinates[1]}
+            onClose={() => setSelectedCheckpoint(null)}
+            closeButton={true}
+            closeOnClick={false}
+            anchor="bottom"
+          >
+            <div 
+              style={{
+                padding: '8px',
+                borderRadius: '4px',
+                backgroundColor: '#ffffff',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                minWidth: '150px',
+                maxWidth: '300px'
+              }}
+            >
+              <Typography
+                variant="body1"
+                style={{
+                  color: '#1a1a1a',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  margin: 0,
+                  textAlign: 'center',
+                  wordBreak: 'break-word',
+                  lineHeight: 1.5
+                }}
+              >
+                {selectedCheckpoint.description}
+              </Typography>
+            </div>
+          </Popup>
+        )}
+        
         <NavigationControl position="top-right" />
         <GeolocateControl position="top-right" />
       </ReactMapGL>

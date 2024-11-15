@@ -3,7 +3,7 @@ import Trail from '../models/trail.js';
 export const postTrail = async (req, res) => {
    
     try {
-        const {currentUser,sloc,floc,checkp,price,title,description,images} = req.body;
+        const {currentUser,sloc,floc,checkp,price,title,description,difficulty,images} = req.body;
        console.log(images)
         const trail = new Trail({
             sloc: sloc,
@@ -16,6 +16,7 @@ export const postTrail = async (req, res) => {
             uid: currentUser.id,
             uName: currentUser.name,
             uPhoto: currentUser.photoURL,
+            difficulty:difficulty
         });
         await trail.save();
         res.status(201).json({success: true, result: trail});
