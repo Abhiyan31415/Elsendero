@@ -59,12 +59,12 @@ function EventCard() {
   return (
     <Box sx={{ p: 4, backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" color="primary">Event Manager</Typography>
+        <Typography variant="h4" color="#06402b">Event Manager</Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => setOpenAddEventDialog(true)}
-          sx={{ fontWeight: 'bold', backgroundColor: '#1976d2', ':hover': { backgroundColor: '#115293' } }}
+          sx={{ fontWeight: 'bold', backgroundColor: '#06402b', ':hover': { backgroundColor: '#115293' } }}
         >
           Add Event
         </Button>
@@ -78,7 +78,7 @@ function EventCard() {
               onClick={() => handleCardClick(event)}
             >
               <CardContent>
-                <Typography variant="h6" color="primary" gutterBottom>{event.title}</Typography>
+                <Typography variant="h6" color="#06402b" gutterBottom>{event.title}</Typography>
                 <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>{event.description}</Typography>
                 <Typography variant="body2" color="textSecondary">
                   <strong>From:</strong> {new Date(event.from).toLocaleDateString()} - <strong>To:</strong> {new Date(event.to).toLocaleDateString()}
