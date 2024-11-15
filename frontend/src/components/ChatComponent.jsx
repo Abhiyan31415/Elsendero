@@ -4,7 +4,7 @@ import SendIcon from "@mui/icons-material/Send";
 import axios from "axios";
 import io from "socket.io-client";
 
-const ChatComponent = () => {
+const ChatComponent = ({eventId}) => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
     const [username, setUsername] = useState("");
@@ -67,7 +67,7 @@ const ChatComponent = () => {
 
     const handleSendMessage = () => {
         if (newMessage.trim()) {
-            const messageData = { userId, username, content: newMessage };
+            const messageData = { userId, username, content: newMessage,eventId};
             socket.current.emit("chat message", messageData);
             setNewMessage("");
         }

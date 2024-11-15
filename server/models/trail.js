@@ -13,6 +13,7 @@ const trailSchema = new mongoose.Schema({
     uid:{type:String,required:true},
     uName:{type:String,required:true},
     uPhoto:{type:String,default:''},
+    
 
 
 },

@@ -34,7 +34,9 @@ function EventCard() {
 
   // Handle clicking on an event card
   const handleCardClick = (event) => {
+    
     setSelectedEvent(event);
+
   };
 
   // Handle adding a new event

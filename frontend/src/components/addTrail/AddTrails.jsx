@@ -104,6 +104,7 @@ function AddTrails({setPage}) {
     },[steps])
 
   const handleSubmit=()=>{
+    console.log(difficulty)
     const trail={
       currentUser,
       sloc:[slocation.lng,slocation.lat],
@@ -112,11 +113,10 @@ function AddTrails({setPage}) {
       price:details.price,
       title:details.title,
       description:details.description,
-      images:images.map((image)=>image)
+      images:images.map((image)=>image),
+    
     }
     createTrail(trail,currentUser,dispatch,setPage)
-
-
   }
   return (
     <Container

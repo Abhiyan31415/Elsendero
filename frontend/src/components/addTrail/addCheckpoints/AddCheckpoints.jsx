@@ -8,7 +8,7 @@ import Geocoder from '../addLocation/Geocoder';
 import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 
 function AddCheckpoints() {
-  const { state: { slocation, flocation, checkpoints }, dispatch } = useValue();
+  const { state: { slocation, flocation, checkpoints , difficulty}, dispatch } = useValue();
   const [routeGeometry, setRouteGeometry] = useState(null);
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [description, setDescription] = useState('');
@@ -48,6 +48,13 @@ function AddCheckpoints() {
           geometry: data.routes[0].geometry
         });
       }
+      const distance = data.routes[0].distance / 1000; // Convert to km
+      const elevation = data.routes[0].segments.reduce((total, segment) => {
+        return total + Math.abs(segment.annotation.height[segment.annotation.height.length - 1] - segment.annotation.height[0]);
+      }, 0);
+      const difficulty = Math.sqrt(distance*elevation*2)/1.6
+      console.log(difficulty)
+    
     } catch (error) {
       console.error('Error fetching route:', error);
     }
