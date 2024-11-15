@@ -34,8 +34,9 @@ function EventCard() {
 
   // Handle clicking on an event card
   const handleCardClick = (event) => {
+    console.log("Selected Event:", event); // Debugging
     setSelectedEvent(event);
-  };
+};
 
   // Handle adding a new event
   const handleAddEvent = async () => {
@@ -97,11 +98,12 @@ function EventCard() {
 
       {/* Display ChatComponent if an event is selected */}
       {selectedEvent && (
-        <Box sx={{ mt: 4 }}>
-          <Typography variant="h6" color="secondary" sx={{ mb: 2 }}>Chat for {selectedEvent.title}</Typography>
-          <ChatComponent event={selectedEvent} />
-        </Box>
-      )}
+  <Box sx={{ mt: 4 }}>
+    <Typography variant="h6" color="secondary" sx={{ mb: 2 }}>Chat for {selectedEvent.title}</Typography>
+    <ChatComponent eventId={selectedEvent._id} />
+  </Box>
+)}
+
 
       {/* Add Event Dialog */}
       <Dialog open={openAddEventDialog} onClose={() => setOpenAddEventDialog(false)}>
