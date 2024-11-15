@@ -4,6 +4,7 @@ import { useValue } from '../../context/ContextProvider';
 import Appbar from '@mui/material/AppBar';
 import Slide from '@mui/material/Slide';
 import Close from '@mui/icons-material/Close';
+import axios from 'axios';
 
 // Fix 1: Import modules from swiper/modules
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -27,21 +28,90 @@ const TrailInfo = () => {
     };
     const [splace, setSplace] = useState(null);
     const [fplace, setFplace] = useState(null);
+    const [diff, setDiff] = useState(null);
 
     useEffect(() => {
         if (trail) {
-            const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${trail.sloc[0]},${trail.sloc[1]}.json?access_token=pk.eyJ1IjoiYWJoaXlhbjEyMTIiLCJhIjoiY20zNnQwNWJnMGFsbzJqc2wxMTh2a2JjaCJ9.QY9Xj_GfNoO9yu9nkiMb1g`;
-            fetch(url)
-                .then((res) => res.json())
-                .then((data) => {
-                    setSplace(data.features[0]?.place_name);
-                });
-            const url2 = `https://api.mapbox.com/geocoding/v5/mapbox.places/${trail.floc[0]},${trail.floc[1]}.json?access_token=pk.eyJ1IjoiYWJoaXlhbjEyMTIiLCJhIjoiY20zNnQwNWJnMGFsbzJqc2wxMTh2a2JjaCJ9.QY9Xj_GfNoO9yu9nkiMb1g`;
-            fetch(url2)
-                .then((res) => res.json())
-                .then((data) => {
-                    setFplace(data.features[0]?.place_name);
-                });
+            const fetchPlaceNames = async () => {
+                const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${trail.sloc[0]},${trail.sloc[1]}.json?access_token=pk.eyJ1IjoiYWJoaXlhbjEyMTIiLCJhIjoiY20zNnQwNWJnMGFsbzJqc2wxMTh2a2JjaCJ9.QY9Xj_GfNoO9yu9nkiMb1g`;
+                const url2 = `https://api.mapbox.com/geocoding/v5/mapbox.places/${trail.floc[0]},${trail.floc[1]}.json?access_token=pk.eyJ1IjoiYWJoaXlhbjEyMTIiLCJhIjoiY20zNnQwNWJnMGFsbzJqc2wxMTh2a2JjaCJ9.QY9Xj_GfNoO9yu9nkiMb1g`;
+
+                const [startPlace, finishPlace] = await Promise.all([
+                    fetch(url).then((res) => res.json()),
+                    fetch(url2).then((res) => res.json())
+                ]);
+
+                setSplace(startPlace.features[0]?.place_name);
+                setFplace(finishPlace.features[0]?.place_name);
+            };
+
+            const getElevation = async (location) => {
+                const API_URL = `https://api.open-meteo.com/v1/elevation`;
+                try {
+                    const response = await axios.get(API_URL, {
+                        params: {
+                            latitude: location[1],
+                            longitude: location[0]
+                        }
+                    });
+                    return response.data.elevation; // Elevation in meters
+                } catch (error) {
+                    console.error("Error fetching elevation:", error.message);
+                    throw new Error("Unable to fetch elevation data.");
+                }
+            };
+
+            const calculateDistance = (sloc, floc) => {
+                const toRad = (value) => (value * Math.PI) / 180;
+
+                const R = 6371; // Radius of the Earth in km
+                const dLat = toRad(floc[1] - sloc[1]);
+                const dLon = toRad(floc[0] - sloc[0]);
+
+                const a =
+                    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos(toRad(sloc[1])) *
+                    Math.cos(toRad(floc[1])) *
+                    Math.sin(dLon / 2) *
+                    Math.sin(dLon / 2);
+
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                return R * c; // Distance in km
+            };
+
+            const calculateDifficulty = async () => {
+                try {
+                    const [startElevation, finalElevation] = await Promise.all([
+                        getElevation(trail.sloc),
+                        getElevation(trail.floc)
+                    ]);
+
+                    const elevationGained = finalElevation - startElevation;
+                    const distance = calculateDistance(trail.sloc, trail.floc);
+                    const numericalRating = Math.sqrt(elevationGained * distance * 2) / 1.6;
+
+                    let dif = '';
+                    if (numericalRating < 50 && distance < 3) {
+                        dif = "Easiest";
+                    } else if (numericalRating >= 50 && numericalRating <= 100 && distance >= 3 && distance <= 5) {
+                        dif = "Moderate";
+                    } else if (numericalRating > 100 && numericalRating <= 150 && distance >= 5 && distance <= 8) {
+                        dif = "Moderately Strenuous";
+                    } else if (numericalRating > 150 && numericalRating <= 200 && distance >= 7 && distance <= 10) {
+                        dif = "Strenuous";
+                    } else if (numericalRating > 200 && distance >= 8) {
+                        dif = "Very Strenuous";
+                    } else {
+                        dif = "Not categorized";
+                    }
+                    setDiff(dif);
+                } catch (error) {
+                    console.error('Error calculating difficulty:', error);
+                }
+            };
+
+            fetchPlaceNames();
+            calculateDifficulty();
         }
     }, [trail]);
 
@@ -133,6 +203,14 @@ const TrailInfo = () => {
                                 precision={0.5}
                                 emptyIcon={<StarBorder />}
                             />
+                        </Box>
+                    </Stack>
+                    <Stack direction='row' justifyContent='space-between' flexWrap='wrap' gap={2}>
+                        <Box>
+                            <Typography variant='subtitle1' fontWeight={700} color="#06402b">
+                                Difficulty
+                            </Typography>
+                            <Typography variant='body1'>{diff}</Typography>
                         </Box>
                     </Stack>
                     <Stack direction='row' justifyContent='space-between' flexWrap='wrap' gap={2}>

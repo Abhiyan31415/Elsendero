@@ -11,7 +11,7 @@ import { Send } from '@mui/icons-material'
 import { createTrail } from '../../actions/trail'
 
 function AddTrails({setPage}) {
-  const {state:{images,details,slocation,flocation,checkpoints,currentUser},dispatch}=useValue()
+  const {state:{images,details,slocation,flocation,checkpoints,currentUser,difficulty},dispatch}=useValue()
   const [activeStep, setActiveStep] =useState(0)
   const [steps, setSteps] =useState([
     {label:'Start Location',completed:false},
@@ -104,7 +104,7 @@ function AddTrails({setPage}) {
     },[steps])
 
   const handleSubmit=()=>{
-    console.log(difficulty)
+    
     const trail={
       currentUser,
       sloc:[slocation.lng,slocation.lat],
@@ -114,7 +114,7 @@ function AddTrails({setPage}) {
       title:details.title,
       description:details.description,
       images:images.map((image)=>image),
-    
+      difficulty:''
     }
     createTrail(trail,currentUser,dispatch,setPage)
   }

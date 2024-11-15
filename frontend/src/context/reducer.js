@@ -65,7 +65,10 @@ const reducer=(state,action)=>{
             )}
         case 'CLEAR_ADDRESS':
             return {...state,addressFilter:null,priceFilter:150}
-        
+        case 'UPDATE_TRAIL':
+            return {...state,trail:action.payload}
+       
+            
         default:
             throw new Error('No matched action:')
     }

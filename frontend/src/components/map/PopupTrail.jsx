@@ -16,7 +16,7 @@ const PopupTrail = ({popupInfo}) => {
     <Card
     sx={{
         maxWidth:400,
-
+        minWidth:400,
     }}
     >
         <ImageListItem sx={{display:'block'}}>
