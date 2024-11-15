@@ -122,26 +122,59 @@ app.use((req, res) => {
 io.on("connection", (socket) => {
   console.log("A user connected");
 
-  socket.on("chat message", async (msg) => {
-    const message = new Message(msg);
-    await message.save();
-
-    io.emit("chat message", message); // Broadcast to all clients
+  // Handle joining a specific event room
+  socket.on("join room", (eventId) => {
+      if (eventId) {
+          socket.join(eventId);
+          console.log(`User joined room: ${eventId}`);
+      } else {
+          socket.emit("error", "Event ID is required to join a room");
+      }
   });
+
+  // Handle sending a chat message to a specific room
+  socket.on("chat message", async (msg) => {
+    console.log("Received message data:", msg); // Debugging
+
+    const { eventId, userId, username, content } = msg;
+
+    if (!eventId) {
+        console.error("Error: Event ID is missing in the message data.");
+        return socket.emit("error", "Event ID is required.");
+    }
+
+    try {
+        const message = new Message({ eventId, userId, username, content });
+        await message.save();
+        console.log("Message saved:", message);
+        io.to(eventId).emit("chat message", message); // Broadcast to event room
+    } catch (error) {
+        console.error("Error saving message:", error);
+    }
+});
+
 
   socket.on("disconnect", () => {
-    console.log("A user disconnected");
+      console.log("A user disconnected");
   });
 });
 
+
 app.get("/messages", async (req, res) => {
+  const { eventId } = req.query;
+
+  if (!eventId) {
+      return res.status(400).json({ error: "Event ID is required" });
+  }
+
   try {
-    const messages = await Message.find().sort({ timestamp: 1 }).limit(50);
-    res.json(messages);
+      const messages = await Message.find({ eventId }).sort({ timestamp: 1 }).limit(50);
+      res.json(messages);
   } catch (error) {
-    res.status(500).json({ error: "Unable to retrieve messages" });
+      res.status(500).json({ error: "Unable to retrieve messages" });
   }
 });
+
 
 const startServer = async () => {
   try {
