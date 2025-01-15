@@ -3,10 +3,13 @@
 Gantabya is a travel companion app designed to enhance group trips and city-to-city travel. It provides features such as live location sharing, real-time step tracking, and in-app chat for seamless coordination and safety.
 
 ## Features
+-In-App Chat with Reddit-like Threads: Communicate effortlessly within the app using threaded discussions for better organization.
 
-- **Live Location Sharing:** Keep track of group members in real-time.
-- **Real-Time Step Tracking:** Monitor your steps during the trip.
-- **In-App Chat:** Communicate effortlessly within the app.
+-Trail Definition: Define and share travel trails with your group.
+
+-Weather Tracking: Stay informed about weather conditions in your destination.
+
+-Facility Tracking Using OpenStreetMap (OSM): Locate nearby facilities and points of interest with accurate OSM integration.
 
 ## Requirements
 
