@@ -1,6 +1,6 @@
 import fetchData from './utils/fetchData.js'
 import {v4 as uuidv4} from 'uuid'
-const url ='http://localhost:5000/user';
+const url ='https://redly-phonological-mariam.ngrok-free.dev/user';
 import uploadFile from '../firebase/uploadFile';
 
 export const register=async(user,dispatch)=>{

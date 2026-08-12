@@ -104,7 +104,6 @@ function AddTrails({setPage}) {
     },[steps])
 
   const handleSubmit=()=>{
-    console.log(difficulty)
     const trail={
       currentUser,
       sloc:[slocation.lng,slocation.lat],

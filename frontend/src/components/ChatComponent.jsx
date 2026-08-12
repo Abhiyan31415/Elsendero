@@ -24,7 +24,7 @@ const ChatComponent = ({ eventId }) => {
     useEffect(() => {
         if (!userId || !username || !eventId) return;
 
-        socket.current = io("http://localhost:5000", { query: { userId, username } });
+        socket.current = io("https://redly-phonological-mariam.ngrok-free.dev", { query: { userId, username } });
 
         socket.current.on("connect", () => {
             console.log("Connected to server");
@@ -49,7 +49,7 @@ const ChatComponent = ({ eventId }) => {
     const fetchMessages = async () => {
         if (!eventId) return;
         try {
-            const response = await axios.get(`http://localhost:5000/messages?eventId=${eventId}`);
+            const response = await axios.get(`https://redly-phonological-mariam.ngrok-free.dev/messages?eventId=${eventId}`);
             setMessages(response.data);
         } catch (error) {
             console.error("Error fetching messages:", error);
