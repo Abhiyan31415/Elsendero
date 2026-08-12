@@ -24,11 +24,17 @@ const io = new Server(server, {
 });
 
 const corsOptions = {
-  origin: 'http://localhost:5173', // Replace with your frontend URL
+  origin: [
+    'http://localhost:5173',
+    'https://elsendero.netlify.app',
+    'https://elsendero.abhiyankhanal1.com.np'
+  ],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
   credentials: true,
 };
+
+app.use(cors(corsOptions));
 
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
@@ -99,11 +105,29 @@ app.get('/api/images/:filename', (req, res) => {
   res.sendFile(path.join(__dirname, 'uploads', filename));
 });
 // CORS setup
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://elsendero.netlify.app',
+  'https://elsendero.abhiyankhanal1.com.np'
+];
+
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'file://');
-  res.setHeader('Access-Control-Allow-Origin', process.env.CLIENT_URL || '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH');
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,Authorization');
+  const origin = req.headers.origin;
+
+  // If the request origin is in our allowed list, reflect it back
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Authorization, ngrok-skip-browser-warning');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+  // Intercept browser OPTIONS preflight requests immediately
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+
   next();
 });
 app.use('/api/events', eventRoutes);
