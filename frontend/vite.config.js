@@ -5,8 +5,8 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   define: {
-    // Wrap the arrow function inside quotes as a string:
-    'process.cwd': '(() => "/")',
+    // JSON.stringify('/') outputs '"/"', which is valid JSON for esbuild
+    'process.cwd': JSON.stringify('/'),
   },
   server: {
     proxy: {
