@@ -1,7 +1,8 @@
+import { API_URL } from '../config';
 import fetchData from './utils/fetchData'
 
 
-const url ='https://redly-phonological-mariam.ngrok-free.dev'
+const url = `${API_URL}/trial`
 
 export const createTrail =async(trail,currentUser,dispatch,setPage)=>{
     dispatch({type:'START_LOADING'})

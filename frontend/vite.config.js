@@ -11,7 +11,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/uploads': {
-        target: 'https://redly-phonological-mariam.ngrok-free.dev',
+        target: process.env.VITE_API_URL || 'http://localhost:5000',
         changeOrigin: true,
       }
     }

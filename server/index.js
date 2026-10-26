@@ -1,214 +1,142 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import mongoose from 'mongoose';
 import http from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import path from 'path';
-import multer from 'multer';
 import fs from 'fs';
+import multer from 'multer';
+import { fileURLToPath } from 'url';
 
 import roomRouter from './routes/roomRouter.js';
 import userRouter from './routes/userRouter.js';
 import messageRouter from './routes/messageRouter.js';
-import Message from './models/Message.js';
 import trialRouter from './routes/trialRouter.js';
 import eventRoutes from './routes/eventRoutes.js';
+import { migrate, pool } from './db/index.js';
+import { saveMessage, listMessages } from './db/messages.js';
 
 dotenv.config();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const port = process.env.PORT || 5000;
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: "*" }
-});
+// Public address of this API, used to build absolute image URLs.
+const publicUrl = (process.env.PUBLIC_URL || `http://localhost:${port}`).replace(/\/$/, '');
+const uploadsDir = path.join(__dirname, 'uploads');
+fs.mkdirSync(uploadsDir, { recursive: true });
 
-const corsOptions = {
-  origin: [
-    'http://localhost:5173',
-    'https://elsendero.netlify.app',
-    'https://elsendero.abhiyankhanal1.com.np'
-  ],
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://elsendero.netlify.app',
+  'https://elsendero.abhiyankhanal1.com.np',
+  ...(process.env.EXTRA_ORIGINS ? process.env.EXTRA_ORIGINS.split(',') : []),
+];
+
+const app = express();
+app.set('trust proxy', 1);
+const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: allowedOrigins } });
+
+app.use(cors({
+  origin: allowedOrigins,
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
   credentials: true,
-};
-
-app.use(cors(corsOptions));
-
-app.use(cors(corsOptions));
+}));
 app.use(express.json({ limit: '10mb' }));
 
-const storage = multer.diskStorage({
-  destination: './uploads/',
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-    
-  },
-});
-
-function checkFileType(file, cb) {
-  const filetypes = /jpeg|jpg|png/;
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = filetypes.test(file.mimetype);
-
-  if (mimetype && extname) {
-    return cb(null, true);
-  } else {
-    cb('Error: Images Only!');
-  }
-}
-let _ID_;
+// Image uploads (max 1 MB, jpg/png only)
 const upload = multer({
-  storage: storage,
-  limits: { fileSize: 1000000 }, // 1MB limit
+  storage: multer.diskStorage({
+    destination: uploadsDir,
+    filename: (req, file, cb) => {
+      const safe = path.basename(file.originalname).replace(/[^a-zA-Z0-9._-]/g, '_');
+      cb(null, `${Date.now()}-${safe}`);
+    },
+  }),
+  limits: { fileSize: 1_000_000 },
   fileFilter: (req, file, cb) => {
-    checkFileType(file, cb);
+    const ok = /jpeg|jpg|png/;
+    if (ok.test(path.extname(file.originalname).toLowerCase()) && ok.test(file.mimetype)) {
+      return cb(null, true);
+    }
+    cb('Error: Images Only!');
   },
 }).single('image');
 
 app.post('/upload', (req, res) => {
   upload(req, res, (err) => {
-    _ID_=req.body.userId
-    if (err) {
-      res.status(400).json({ message: err });
-    } else {
-      if (req.file == undefined) {
-        res.status(400).json({ message: 'No file selected!' });
-      } else {
-        res.status(200).json({
-          message: 'File uploaded!',
-          filePath: `/uploads/${req.file.filename}`,
-        });
-      }
-    }
+    if (err) return res.status(400).json({ message: String(err.message || err) });
+    if (!req.file) return res.status(400).json({ message: 'No file selected!' });
+    res.status(200).json({
+      message: 'File uploaded!',
+      filePath: `${publicUrl}/uploads/${req.file.filename}`,
+    });
   });
 });
 
 app.get('/images', (req, res) => {
-  const directoryPath = path.join(__dirname, 'uploads');
-  fs.readdir(directoryPath, (err, files) => {
-    if (err) {
-      return res.status(500).json({ message: 'Unable to scan files!' });
-    }
-    const images = files.map(file => `/uploads/${file}`);
-    res.status(200).json({ images });
+  fs.readdir(uploadsDir, (err, files) => {
+    if (err) return res.status(500).json({ message: 'Unable to scan files!' });
+    res.status(200).json({ images: files.map((f) => `${publicUrl}/uploads/${f}`) });
   });
 });
 
-app.use('/uploads', express.static('uploads'));
-
-//pp.use('/images', express.static(path.join(__dirname, 'uploads')));
-
+app.use('/uploads', express.static(uploadsDir));
 app.get('/api/images/:filename', (req, res) => {
-  const filename = req.params.filename;
-  res.sendFile(path.join(__dirname, 'uploads', filename));
+  res.sendFile(path.join(uploadsDir, path.basename(req.params.filename)));
 });
-// CORS setup
-const allowedOrigins = [
-  'http://localhost:5173',
-  'https://elsendero.netlify.app',
-  'https://elsendero.abhiyankhanal1.com.np'
-];
 
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-
-  // If the request origin is in our allowed list, reflect it back
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Authorization, ngrok-skip-browser-warning');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-
-  // Intercept browser OPTIONS preflight requests immediately
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-
-  next();
-});
 app.use('/api/events', eventRoutes);
 app.use('/messages', messageRouter);
 app.use('/room', roomRouter);
 app.use('/user', userRouter);
-app.use('/trial', trialRouter); 
+app.use('/trial', trialRouter);
 
-app.get('/', (req, res) => {
-  res.json({ message: 'Hello World' });
-});
-app.use((req, res) => {
-  res.status(404).json({ message: 'Page not found' });
-});
-
-io.on("connection", (socket) => {
-  console.log("A user connected");
-
-  // Handle joining a specific event room
-  socket.on("join room", (eventId) => {
-      if (eventId) {
-          socket.join(eventId);
-          console.log(`User joined room: ${eventId}`);
-      } else {
-          socket.emit("error", "Event ID is required to join a room");
-      }
-  });
-
-  // Handle sending a chat message to a specific room
-  socket.on("chat message", async (msg) => {
-    console.log("Received message data:", msg); // Debugging
-
-    const { eventId, userId, username, content } = msg;
-
-    if (!eventId) {
-        console.error("Error: Event ID is missing in the message data.");
-        return socket.emit("error", "Event ID is required.");
-    }
-
-    try {
-        const message = new Message({ eventId, userId, username, content });
-        await message.save();
-        console.log("Message saved:", message);
-        io.to(eventId).emit("chat message", message); // Broadcast to event room
-    } catch (error) {
-        console.error("Error saving message:", error);
-    }
-});
-
-
-  socket.on("disconnect", () => {
-      console.log("A user disconnected");
-  });
-});
-
-
-app.get("/messages", async (req, res) => {
-  const { eventId } = req.query;
-
-  if (!eventId) {
-      return res.status(400).json({ error: "Event ID is required" });
-  }
-
+app.get('/', (req, res) => res.json({ message: 'Hello World' }));
+app.get('/health', async (req, res) => {
   try {
-      const messages = await Message.find({ eventId }).sort({ timestamp: 1 }).limit(50);
-      res.json(messages);
-  } catch (error) {
-      res.status(500).json({ error: "Unable to retrieve messages" });
+    await pool.query('SELECT 1');
+    res.json({ ok: true });
+  } catch {
+    res.status(503).json({ ok: false });
   }
 });
+app.use((req, res) => res.status(404).json({ message: 'Page not found' }));
 
+io.on('connection', (socket) => {
+  socket.on('join room', (eventId) => {
+    if (eventId) socket.join(String(eventId));
+    else socket.emit('error', 'Event ID is required to join a room');
+  });
+
+  socket.on('chat message', async (msg) => {
+    const { eventId, userId, username, content } = msg || {};
+    if (!eventId) return socket.emit('error', 'Event ID is required.');
+    try {
+      const message = await saveMessage({ eventId, userId, username, content });
+      io.to(String(eventId)).emit('chat message', message);
+    } catch (error) {
+      console.error('Error saving message:', error);
+    }
+  });
+});
+
+app.get('/messages', async (req, res) => {
+  if (!req.query.eventId) return res.status(400).json({ error: 'Event ID is required' });
+  try {
+    res.json(await listMessages(req.query.eventId));
+  } catch {
+    res.status(500).json({ error: 'Unable to retrieve messages' });
+  }
+});
 
 const startServer = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_CONNECT, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
-    server.listen(port, () => console.log(`Server is running on port ${port}`));
+    await migrate();
+    server.listen(port, '127.0.0.1', () => console.log(`Server is running on port ${port}`));
   } catch (error) {
-    console.log("Failed to start server:", error);
+    console.error('Failed to start server:', error);
+    process.exit(1);
   }
 };
 

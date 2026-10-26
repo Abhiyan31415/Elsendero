@@ -1,3 +1,4 @@
+import { API_URL } from '../config';
 // src/utils/uploadFile.js
 
 const uploadFile = async (file, userId) => {
@@ -5,7 +6,7 @@ const uploadFile = async (file, userId) => {
   formData.append('image', file);
   formData.append('userId', userId);
 
-  const response = await fetch('https://redly-phonological-mariam.ngrok-free.dev/upload', {
+  const response = await fetch(`${API_URL}/upload`, {
     method: 'POST',
     body: formData,
   });

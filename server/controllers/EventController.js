@@ -1,35 +1,30 @@
-import { Event } from '../models/Event.js';  // Using named import
+import { query } from '../db/index.js';
+import { toEvent } from '../db/mappers.js';
 
-// Add a new event
 const createEvent = async (req, res) => {
-  const { title, description, from, to, location, participants } = req.body;
-
+  const { title, description, from, to, location, participants = [] } = req.body;
   try {
-    const newEvent = new Event({
-      title,
-      description,
-      from,
-      to,
-      location,
-      participants,
-    });
-
-    await newEvent.save();
-    res.status(201).json(newEvent);
+    const { rows } = await query(
+      `INSERT INTO events (title, description, from_date, to_date, location, participants)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [title, description, from, to, location,
+        participants.map((p) => String(p).trim()).filter(Boolean)],
+    );
+    res.status(201).json(toEvent(rows[0]));
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Error creating event' });
   }
 };
 
-// Get all events
 const getEvents = async (req, res) => {
   try {
-    const events = await Event.find();
-    res.status(200).json(events);
+    const { rows } = await query('SELECT * FROM events ORDER BY from_date');
+    res.status(200).json(rows.map(toEvent));
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Error fetching events' });
   }
 };
 
-// Default export
 export default { createEvent, getEvents };

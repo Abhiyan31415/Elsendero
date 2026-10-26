@@ -1,3 +1,4 @@
+import { API_URL } from '../../config';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
@@ -23,7 +24,7 @@ function EventCard() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await axios.get('https://redly-phonological-mariam.ngrok-free.dev/api/events');
+        const response = await axios.get(`${API_URL}/api/events`);
         setEvents(response.data);
       } catch (error) {
         console.error('Error fetching events:', error);
@@ -41,7 +42,7 @@ function EventCard() {
   // Handle adding a new event
   const handleAddEvent = async () => {
     try {
-      const response = await axios.post('https://redly-phonological-mariam.ngrok-free.dev/api/events', newEvent);
+      const response = await axios.post(`${API_URL}/api/events`, newEvent);
       setEvents((prevEvents) => [...prevEvents, response.data]); // Add the newly created event
       setNewEvent({
         title: '',

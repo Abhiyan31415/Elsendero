@@ -1,7 +1,6 @@
 const fetchData = async ({ url, method = 'POST', token = '', body = null }, dispatch) => {
     const headers = {
         'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true',
         ...(token ? { Authorization: `Bearer ${token}` } : {})
     };
 
