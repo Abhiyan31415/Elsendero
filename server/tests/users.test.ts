@@ -13,7 +13,7 @@ afterAll(async () => {
 
 describe('users', () => {
   it('PATCH /users/me updates name/photo and re-issues the token', async () => {
-    const u = await registerUser(ctx.app);
+    const u = await registerUser(ctx);
     const res = await request(ctx.app)
       .patch('/api/v1/users/me')
       .set('Authorization', `Bearer ${u.token}`)
@@ -28,7 +28,7 @@ describe('users', () => {
   });
 
   it('PATCH /users/me validates input and requires auth', async () => {
-    const u = await registerUser(ctx.app);
+    const u = await registerUser(ctx);
     const empty = await request(ctx.app).patch('/api/v1/users/me').set('Authorization', `Bearer ${u.token}`).send({});
     expect(empty.status).toBe(400);
     expect(empty.body.message).toBe('Nothing to update');
@@ -43,7 +43,7 @@ describe('users', () => {
   });
 
   it('GET /users/:id returns a public profile without email', async () => {
-    const u = await registerUser(ctx.app);
+    const u = await registerUser(ctx);
     const res = await request(ctx.app).get(`/api/v1/users/${u.id}`);
     expect(res.status).toBe(200);
     expect(res.body.result).toEqual({

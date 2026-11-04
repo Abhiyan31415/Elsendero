@@ -44,12 +44,19 @@ const schema = z.object({
 
   LOCAL_STORAGE_DIR: optionalString,
   REDIS_URL: optionalString,
+
+  RESEND_API_KEY: optionalString,
+  EMAIL_FROM: z.string().trim().min(1).default('Gantabya <onboarding@resend.dev>'),
+  /** Frontend base URL used in email links. Defaults to the first CLIENT_URL origin. */
+  APP_URL: optionalString,
 });
 
 export type Env = Omit<
   z.infer<typeof schema>,
-  'DATABASE_SSL' | 'CLIENT_URL' | 'EXTRA_ORIGINS' | 'PUBLIC_API_URL' | 'PUBLIC_URL'
+  'DATABASE_SSL' | 'CLIENT_URL' | 'EXTRA_ORIGINS' | 'PUBLIC_API_URL' | 'PUBLIC_URL' | 'APP_URL'
 > & {
+  /** Frontend base URL for links in emails, no trailing slash. */
+  APP_URL: string;
   DATABASE_SSL: boolean;
   /** Allowed browser origins (CORS + Socket.io). */
   CLIENT_ORIGINS: string[];
@@ -76,6 +83,9 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     throw new EnvError(
       'Invalid environment configuration:\n  - R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY must be set together',
     );
+  }
+  if (isProd && !e.RESEND_API_KEY) {
+    throw new EnvError('Invalid environment configuration:\n  - RESEND_API_KEY is required in production');
   }
   if (isProd && !hasKey) {
     throw new EnvError(
@@ -106,6 +116,9 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     R2_PUBLIC_URL: e.R2_PUBLIC_URL ? stripSlash(e.R2_PUBLIC_URL) : undefined,
     LOCAL_STORAGE_DIR: e.LOCAL_STORAGE_DIR,
     REDIS_URL: e.REDIS_URL,
+    RESEND_API_KEY: e.RESEND_API_KEY,
+    EMAIL_FROM: e.EMAIL_FROM,
+    APP_URL: stripSlash(e.APP_URL ?? origins[0] ?? 'http://localhost:3000'),
     STORAGE_DRIVER: hasKey ? 'r2' : 'disk',
   };
 }

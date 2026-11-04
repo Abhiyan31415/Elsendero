@@ -109,6 +109,9 @@ npm run dev                  # http://localhost:3000
 | `R2_BUCKET` | no | `gantabya` | R2 bucket name |
 | `R2_ACCESS_KEY_ID` | for R2 | | R2 API token access key. Without it, uploads go to local disk |
 | `R2_SECRET_ACCESS_KEY` | for R2 | | R2 API token secret |
+| `RESEND_API_KEY` | in production | | [Resend](https://resend.com) key for verification and password reset emails. Without it (dev only), emails are printed to the server log |
+| `EMAIL_FROM` | no | `Gantabya <onboarding@resend.dev>` | Sender address. Use an address on a domain verified in Resend; the default test sender only delivers to your own Resend account |
+| `APP_URL` | no | first `CLIENT_URL` origin | Frontend address used in email links |
 | `R2_PUBLIC_URL` | no | | Public bucket domain (r2.dev or custom). If unset, media is proxied through `/media/*` |
 | `REDIS_URL` | no | | Enables the socket.io Redis adapter and shared rate limits |
 
@@ -194,7 +197,7 @@ Render's free Postgres expires after 30 days; upgrade the plan or move the data 
    - `gantabya-api`: Docker web service built from `server/Dockerfile`, health check `/health`
    - `gantabya-db`: Postgres database, wired into `DATABASE_URL`
    - `gantabya-redis`: free Key Value instance, wired into `REDIS_URL`
-2. `JWT_SECRET` is generated automatically. Fill in the variables marked `sync: false` when prompted: `CLIENT_URL`, `PUBLIC_API_URL`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `RESEND_API_KEY`, and optionally `R2_PUBLIC_URL`.
+2. `JWT_SECRET` is generated automatically. Fill in the variables marked `sync: false` when prompted: `CLIENT_URL`, `PUBLIC_API_URL`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `RESEND_API_KEY`, `EMAIL_FROM`, `APP_URL` (the Netlify URL), and optionally `R2_PUBLIC_URL`.
 3. After the first deploy, set `PUBLIC_API_URL` to the service URL if you did not know it in advance.
 
 The free plan sleeps after inactivity, so the first request after a while is slow.

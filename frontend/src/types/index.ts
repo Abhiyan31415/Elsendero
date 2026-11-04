@@ -15,6 +15,8 @@ export interface User {
   name: string;
   email: string;
   photoURL: string;
+  /** False until the user clicks the link in their verification email. */
+  emailVerified?: boolean;
 }
 
 /** Public profile returned by GET /users/:id (email may be omitted). */
@@ -28,6 +30,11 @@ export interface CurrentUser extends User {
 export interface AuthResult {
   user: User;
   token: string;
+}
+
+export interface RegisterResult {
+  user: User;
+  verificationRequired: true;
 }
 
 export interface Trail {

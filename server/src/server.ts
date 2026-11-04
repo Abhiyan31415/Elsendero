@@ -3,6 +3,7 @@ import { createApp } from './app.js';
 import { env } from './config/env.js';
 import { createPgDb } from './db/client.js';
 import { runMigrations } from './db/migrate.js';
+import { createMailer } from './lib/mailer.js';
 import { closeRedis } from './lib/redis.js';
 import { createStorage } from './lib/storage.js';
 import { createSocketServer } from './sockets/index.js';
@@ -12,13 +13,14 @@ async function main(): Promise<void> {
   await runMigrations(conn);
 
   const storage = createStorage(env);
-  const app = createApp({ db: conn.db, storage });
+  const mailer = createMailer(env);
+  const app = createApp({ db: conn.db, storage, mailer });
   const server = http.createServer(app);
   const io = createSocketServer(server, { db: conn.db });
 
   server.listen(env.PORT, env.HOST, () => {
     console.log(`[server] listening on http://${env.HOST}:${env.PORT} (${env.NODE_ENV})`);
-    console.log(`[server] storage=${storage.driver} redis=${env.REDIS_URL ? 'on' : 'off'}`);
+    console.log(`[server] storage=${storage.driver} redis=${env.REDIS_URL ? 'on' : 'off'} mail=${mailer.driver}`);
     console.log(`[server] allowed origins: ${env.CLIENT_ORIGINS.join(', ')}`);
   });
 

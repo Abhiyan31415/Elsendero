@@ -8,6 +8,7 @@ export interface SelfUser {
   name: string;
   email: string;
   photoURL: string;
+  emailVerified: boolean;
 }
 
 /** What anyone can see about a user. */
@@ -23,6 +24,7 @@ export const toSelfUser = (u: UserRow): SelfUser => ({
   name: u.name,
   email: u.email,
   photoURL: u.photoUrl,
+  emailVerified: u.emailVerifiedAt !== null,
 });
 
 export const toPublicProfile = (u: UserRow): PublicProfile => ({

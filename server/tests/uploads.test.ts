@@ -9,7 +9,7 @@ let token: string;
 let userId: string;
 beforeAll(async () => {
   ctx = await createTestContext();
-  const u = await registerUser(ctx.app);
+  const u = await registerUser(ctx);
   token = u.token;
   userId = u.id;
 });

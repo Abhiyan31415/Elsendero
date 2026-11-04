@@ -28,7 +28,7 @@ describe('trails', () => {
   });
 
   it('creates, lists and gets trails; creator comes from the token', async () => {
-    const u = await registerUser(ctx.app, { name: 'Trail Maker' });
+    const u = await registerUser(ctx, { name: 'Trail Maker' });
     const created = await request(ctx.app)
       .post('/api/v1/trails')
       .set('Authorization', `Bearer ${u.token}`)
@@ -61,7 +61,7 @@ describe('trails', () => {
   });
 
   it('validates trail input', async () => {
-    const u = await registerUser(ctx.app);
+    const u = await registerUser(ctx);
     const res = await request(ctx.app)
       .post('/api/v1/trails')
       .set('Authorization', `Bearer ${u.token}`)
@@ -72,7 +72,7 @@ describe('trails', () => {
 
   it('POST /rooms is an authenticated alias for creating a trail', async () => {
     expect((await request(ctx.app).post('/api/v1/rooms').send(trailBody)).status).toBe(401);
-    const u = await registerUser(ctx.app);
+    const u = await registerUser(ctx);
     const res = await request(ctx.app).post('/api/v1/rooms').set('Authorization', `Bearer ${u.token}`).send(trailBody);
     expect(res.status).toBe(201);
     expect(res.body.result.uid).toBe(u.id);
@@ -90,7 +90,7 @@ describe('events & messages', () => {
       participants: ['A', ' ', 'B'],
     };
     expect((await request(ctx.app).post('/api/v1/events').send(body)).status).toBe(401);
-    const u = await registerUser(ctx.app);
+    const u = await registerUser(ctx);
     const res = await request(ctx.app).post('/api/v1/events').set('Authorization', `Bearer ${u.token}`).send(body);
     expect(res.status).toBe(201);
     expect(res.body.result).toMatchObject({ title: 'Weekend trip', participants: ['A', 'B'], createdBy: u.id });
@@ -108,7 +108,7 @@ describe('events & messages', () => {
   });
 
   it('posts and lists messages oldest-first', async () => {
-    const u = await registerUser(ctx.app, { name: 'Chatter' });
+    const u = await registerUser(ctx, { name: 'Chatter' });
     for (const content of ['one', 'two', 'three']) {
       const res = await request(ctx.app)
         .post('/api/v1/messages')

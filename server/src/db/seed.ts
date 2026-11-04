@@ -20,7 +20,7 @@ export async function seed(db: Db): Promise<boolean> {
   ] as const;
   const created = await db
     .insert(users)
-    .values(people.map((p) => ({ ...p, password })))
+    .values(people.map((p) => ({ ...p, password, emailVerifiedAt: new Date() })))
     .returning();
   const by = (i: number) => {
     const u = created[i];

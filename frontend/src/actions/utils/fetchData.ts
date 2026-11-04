@@ -19,6 +19,11 @@ export interface FetchOptions {
   body?: unknown;
   /** Don't show an alert when the server can't be reached. */
   silentNetworkError?: boolean;
+  /**
+   * Called with the server's error `code` (e.g. EMAIL_NOT_VERIFIED).
+   * Return true to handle it yourself and skip the error alert.
+   */
+  onErrorCode?: (code: string) => boolean;
 }
 
 const pathnameOf = (url: string): string => {
@@ -36,7 +41,7 @@ const pathnameOf = (url: string): string => {
  * A 401 on an authenticated, non-login request logs the user out.
  */
 const fetchData = async <T>(
-  { url, method = 'POST', token = '', body = null, silentNetworkError = false }: FetchOptions,
+  { url, method = 'POST', token = '', body = null, silentNetworkError = false, onErrorCode }: FetchOptions,
   dispatch: Dispatch,
 ): Promise<T | null> => {
   const canHaveBody = body !== null && body !== undefined && method !== 'GET' && method !== 'HEAD';
@@ -64,7 +69,7 @@ const fetchData = async <T>(
     return null;
   }
 
-  let data: { success?: boolean; result?: T; message?: string } | null = null;
+  let data: { success?: boolean; result?: T; message?: string; code?: string } | null = null;
   try {
     const text = await response.text();
     data = text ? JSON.parse(text) : null;
@@ -84,6 +89,7 @@ const fetchData = async <T>(
   }
 
   if (!response.ok || !data || data.success === false) {
+    if (data?.code && onErrorCode?.(data.code)) return null;
     let message = data?.message;
     if (!message) {
       if (response.status >= 500 || response.status === 0) {

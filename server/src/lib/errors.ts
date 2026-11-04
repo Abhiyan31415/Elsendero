@@ -20,7 +20,7 @@ export const notFoundHandler: RequestHandler = (_req, res) => {
 export const errorHandler: ErrorRequestHandler = (err, _req, res, next) => {
   if (res.headersSent) return next(err);
 
-  if (err instanceof AppError) return fail(res, err.status, err.message);
+  if (err instanceof AppError) return fail(res, err.status, err.message, err.code);
   if (err instanceof ZodError) {
     return fail(res, 400, err.issues[0]?.message ?? 'Invalid request');
   }

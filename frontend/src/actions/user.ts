@@ -1,6 +1,6 @@
 import { API_BASE } from '@/config';
 import { storedToken } from '@/context/session';
-import type { AlertSeverity, AuthResult, CurrentUser, PublicUser, User } from '@/types';
+import type { AlertSeverity, AuthResult, CurrentUser, PublicUser, RegisterResult, User } from '@/types';
 import type { Dispatch } from '@/context/state';
 import { uploadImage } from './upload';
 import fetchData from './utils/fetchData';
@@ -21,23 +21,71 @@ export interface LoginInput {
   password: string;
 }
 
-/** Returns true on success so the caller can reset its form. */
-export const register = async (input: RegisterInput, dispatch: Dispatch): Promise<boolean> => {
-  const result = await fetchData<AuthResult>({ url: `${API_BASE}/auth/register`, body: input }, dispatch);
-  if (!result?.token || !result.user) return false;
+const signIn = (dispatch: Dispatch, result: AuthResult, message: string) => {
   dispatch({ type: 'UPDATE_USER', payload: toSession(result) });
   dispatch({ type: 'CLOSE_LOGIN' });
-  alert(dispatch, `Welcome, ${result.user.name}! Your account has been created.`);
+  alert(dispatch, message);
+};
+
+/** Creates the account. Returns true when the verification email is on its way. */
+export const register = async (input: RegisterInput, dispatch: Dispatch): Promise<boolean> => {
+  const result = await fetchData<RegisterResult>({ url: `${API_BASE}/auth/register`, body: input }, dispatch);
+  return Boolean(result?.user);
+};
+
+export type LoginOutcome = 'ok' | 'unverified' | 'failed';
+
+export const login = async (input: LoginInput, dispatch: Dispatch): Promise<LoginOutcome> => {
+  let unverified = false;
+  const result = await fetchData<AuthResult>(
+    {
+      url: `${API_BASE}/auth/login`,
+      body: input,
+      onErrorCode: (code) => (unverified = code === 'EMAIL_NOT_VERIFIED'),
+    },
+    dispatch,
+  );
+  if (unverified) return 'unverified';
+  if (!result?.token || !result.user) return 'failed';
+  signIn(dispatch, result, `Welcome back, ${result.user.name}!`);
+  return 'ok';
+};
+
+/** Asks for a new verification email. The server replies the same way whether or not the account exists. */
+export const resendVerification = async (email: string, dispatch: Dispatch): Promise<boolean> => {
+  const result = await fetchData<{ message: string }>(
+    { url: `${API_BASE}/auth/resend-verification`, body: { email } },
+    dispatch,
+  );
+  if (result) alert(dispatch, 'If your account still needs verifying, a new link is on its way.', 'info');
+  return Boolean(result);
+};
+
+/** Sends a password reset link. Returns true when the request was accepted. */
+export const forgotPassword = async (email: string, dispatch: Dispatch): Promise<boolean> => {
+  const result = await fetchData<{ message: string }>(
+    { url: `${API_BASE}/auth/forgot-password`, body: { email } },
+    dispatch,
+  );
+  return Boolean(result);
+};
+
+/** Confirms the email from the link and signs the user in. */
+export const verifyEmail = async (token: string, dispatch: Dispatch): Promise<boolean> => {
+  const result = await fetchData<AuthResult>({ url: `${API_BASE}/auth/verify-email`, body: { token } }, dispatch);
+  if (!result?.token || !result.user) return false;
+  signIn(dispatch, result, `Email verified. Welcome, ${result.user.name}!`);
   return true;
 };
 
-/** Returns true on success so the caller can reset its form. */
-export const login = async (input: LoginInput, dispatch: Dispatch): Promise<boolean> => {
-  const result = await fetchData<AuthResult>({ url: `${API_BASE}/auth/login`, body: input }, dispatch);
+/** Sets a new password from the emailed link and signs the user in. */
+export const resetPassword = async (token: string, password: string, dispatch: Dispatch): Promise<boolean> => {
+  const result = await fetchData<AuthResult>(
+    { url: `${API_BASE}/auth/reset-password`, body: { token, password } },
+    dispatch,
+  );
   if (!result?.token || !result.user) return false;
-  dispatch({ type: 'UPDATE_USER', payload: toSession(result) });
-  dispatch({ type: 'CLOSE_LOGIN' });
-  alert(dispatch, `Welcome back, ${result.user.name}!`);
+  signIn(dispatch, result, 'Your password has been changed and you are now logged in.');
   return true;
 };
 

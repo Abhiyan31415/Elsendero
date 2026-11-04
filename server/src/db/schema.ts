@@ -5,3 +5,4 @@ export * from '../modules/users/users.schema.js';
 export * from '../modules/trails/trails.schema.js';
 export * from '../modules/events/events.schema.js';
 export * from '../modules/messages/messages.schema.js';
+export * from '../modules/auth/auth.schema.js';

@@ -55,7 +55,7 @@ describe('socket chat', () => {
   });
 
   it('broadcasts an authenticated message to the room with the author from the token', async () => {
-    const u = await registerUser(ctx.app, { name: 'Socket Sam' });
+    const u = await registerUser(ctx, { name: 'Socket Sam' });
     const sender = await connect(u.token);
     const listener = await connect(); // anonymous sockets can still read
 
@@ -72,7 +72,7 @@ describe('socket chat', () => {
   });
 
   it('validates message length', async () => {
-    const u = await registerUser(ctx.app);
+    const u = await registerUser(ctx);
     const s = await connect(u.token);
     const err = next<string>(s, 'error');
     s.emit('chat message', { eventId: 'evt-sock', content: 'x'.repeat(2001) });

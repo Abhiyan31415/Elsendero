@@ -10,12 +10,14 @@ import { createApp } from '../src/app.js';
 import { MIGRATIONS_DIR } from '../src/config/paths.js';
 import type { Db } from '../src/db/client.js';
 import * as schema from '../src/db/schema.js';
+import { MemoryMailer } from '../src/lib/mailer.js';
 import { DiskStorage } from '../src/lib/storage.js';
 
 export interface TestContext {
   app: Express;
   db: Db;
   storage: DiskStorage;
+  mailer: MemoryMailer;
   storageDir: string;
   close: () => Promise<void>;
 }
@@ -29,12 +31,14 @@ export async function createTestContext(): Promise<TestContext> {
 
   const storageDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gantabya-test-'));
   const storage = new DiskStorage(storageDir, 'http://api.test');
-  const app = createApp({ db, storage });
+  const mailer = new MemoryMailer();
+  const app = createApp({ db, storage, mailer });
 
   return {
     app,
     db,
     storage,
+    mailer,
     storageDir,
     close: async () => {
       await client.close();
@@ -45,10 +49,20 @@ export async function createTestContext(): Promise<TestContext> {
 
 let counter = 0;
 
+/** Pulls the `?token=` value out of the link in an email's text body. */
+export function tokenFromEmail(mailer: MemoryMailer, to: string): string {
+  const email = mailer.last(to);
+  const match = email && /[?&]token=([^\s&]+)/.exec(email.text);
+  if (!match?.[1]) throw new Error(`no email with a token sent to ${to}`);
+  return decodeURIComponent(match[1]);
+}
+
+/** Registers a user, clicks the verification link and returns a signed-in user. */
 export async function registerUser(
-  app: Express,
+  ctx: Pick<TestContext, 'app' | 'mailer'>,
   overrides: Partial<{ name: string; email: string; password: string }> = {},
 ) {
+  const { app, mailer } = ctx;
   counter += 1;
   const body = {
     name: overrides.name ?? `Tester ${counter}`,
@@ -57,10 +71,13 @@ export async function registerUser(
   };
   const res = await request(app).post('/api/v1/auth/register').send(body);
   if (res.status !== 201) throw new Error(`register failed: ${res.status} ${JSON.stringify(res.body)}`);
+  const email = res.body.result.user.email as string;
+  const verified = await request(app).post('/api/v1/auth/verify-email').send({ token: tokenFromEmail(mailer, email) });
+  if (verified.status !== 200) throw new Error(`verify failed: ${verified.status} ${JSON.stringify(verified.body)}`);
   return {
     ...body,
-    id: res.body.result.user.id as string,
-    token: res.body.result.token as string,
+    id: verified.body.result.user.id as string,
+    token: verified.body.result.token as string,
   };
 }
 
