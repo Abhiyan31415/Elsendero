@@ -2,7 +2,7 @@
   "name": "gantabya-server",
   "version": "2.0.0",
   "private": true,
-  "description": "Gantabya travel companion API (Express + Mongoose + Socket.io, TypeScript)",
+  "description": "Gantabya travel companion API (Express + Drizzle/Postgres + Socket.io, TypeScript)",
   "type": "module",
   "main": "dist/server.js",
   "scripts": {

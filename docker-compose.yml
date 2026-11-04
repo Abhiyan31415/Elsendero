@@ -1,4 +1,4 @@
-# Local development stack: MongoDB + Redis + the API.
+# Local development stack: Postgres + Redis + the API.
 #
 #   docker compose up --build
 #
@@ -10,19 +10,23 @@
 name: gantabya
 
 services:
-  mongo:
-    image: mongo:7
+  postgres:
+    image: postgres:16-alpine
     restart: unless-stopped
+    environment:
+      POSTGRES_USER: gantabya
+      POSTGRES_PASSWORD: gantabya
+      POSTGRES_DB: gantabya
     ports:
-      - "27017:27017"
+      - "5432:5432"
     volumes:
-      - mongo-data:/data/db
+      - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      test: ["CMD-SHELL", "pg_isready -U gantabya -d gantabya"]
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 20s
+      start_period: 10s
 
   redis:
     image: redis:7-alpine
@@ -47,7 +51,8 @@ services:
     environment:
       NODE_ENV: development
       PORT: "5000"
-      MONGO_CONNECT: mongodb://mongo:27017/gantabya
+      DATABASE_URL: postgres://gantabya:gantabya@postgres:5432/gantabya
+      DATABASE_SSL: "false"
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET:-dev-only-change-me}
       CLIENT_URL: ${CLIENT_URL:-http://localhost:3000}
@@ -55,10 +60,10 @@ services:
     ports:
       - "5000:5000"
     depends_on:
-      mongo:
+      postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
 
 volumes:
-  mongo-data:
+  postgres-data:

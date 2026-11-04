@@ -1,6 +1,6 @@
 # Render Blueprint: https://render.com/docs/blueprint-spec
-# Deploys the Gantabya API (Docker) plus a free Render Key Value (Redis)
-# instance used by the socket.io adapter and shared rate limits.
+# Deploys the Gantabya API (Docker), a Render Postgres database, and a free
+# Render Key Value (Redis) instance used by the socket.io adapter and shared rate limits.
 
 services:
   - type: web
@@ -16,8 +16,12 @@ services:
         value: production
       - key: PORT
         value: "5000"
-      - key: MONGO_CONNECT
-        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gantabya-db
+          property: connectionString
+      - key: DATABASE_SSL
+        value: "false" # internal connection on Render's private network
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRES_IN
@@ -36,6 +40,8 @@ services:
         sync: false
       - key: R2_PUBLIC_URL
         sync: false
+      - key: RESEND_API_KEY
+        sync: false
       - key: REDIS_URL
         fromService:
           type: keyvalue
@@ -46,4 +52,11 @@ services:
     name: gantabya-redis
     plan: free
     maxmemoryPolicy: noeviction
+    ipAllowList: [] # only reachable from services on Render's private network
+
+databases:
+  - name: gantabya-db
+    plan: free
+    databaseName: gantabya
+    user: gantabya
     ipAllowList: [] # only reachable from services on Render's private network

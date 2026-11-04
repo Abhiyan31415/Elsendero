@@ -3,12 +3,12 @@
 Gantabya is two apps in one repo:
 
 - `frontend/`: Next.js 15 (App Router). Most pages are client components that call the API. Trail pages (`/trails/[id]`) are server-rendered so shared links have real content and previews.
-- `server/`: an Express + socket.io API in TypeScript, backed by MongoDB, with optional Redis and Cloudflare R2.
+- `server/`: an Express + socket.io API in TypeScript, backed by PostgreSQL (Drizzle ORM), with optional Redis and Cloudflare R2.
 
 ```
 Browser ──HTTPS──▶ Netlify (Next.js) ──fetch (SSR)──┐
    │                                                ▼
-   ├──── REST /api/v1/* ───────────────▶ Render: gantabya-api ──▶ MongoDB Atlas
+   ├──── REST /api/v1/* ───────────────▶ Render: gantabya-api ──▶ Render Postgres
    ├──── socket.io (wss) ──────────────▶        │        │
    └──── media (/media/* or R2_PUBLIC_URL) ◀────┘        ├──▶ Cloudflare R2
                                                          └──▶ Render Key Value (Redis)
@@ -18,7 +18,7 @@ Browser ──HTTPS──▶ Netlify (Next.js) ──fetch (SSR)──┐
 
 1. A request hits Express. Global middleware runs first: security headers, CORS (origins from `CLIENT_URL`), JSON body parsing, request logging and rate limiting (in memory, or in Redis when `REDIS_URL` is set so limits are shared across instances).
 2. It is routed to a feature module mounted under `/api/v1/<module>`.
-3. The module's route validates input, runs auth middleware if needed, and calls a controller/service that talks to Mongoose models.
+3. The module's route validates input, runs auth middleware if needed, and calls a controller/service that queries Postgres through Drizzle (`server/src/db/schema.ts`).
 4. Errors are thrown and handled by one central error handler that returns a consistent JSON error shape.
 
 Non-API routes: `GET /health` (used by Docker, Render and Compose health checks) and `GET /media/*` (media proxy, see below).
@@ -49,15 +49,17 @@ Uploads go through the API (multipart), never straight from the browser to the b
 1. Create `server/src/modules/<name>/` with its pieces, for example:
    ```
    server/src/modules/<name>/
-   ├── <name>.model.ts        Mongoose schema + model
-   ├── <name>.schema.ts       request validation
+   ├── <name>.schema.ts       Drizzle table definition
+   ├── <name>.validators.ts   request validation (zod)
+   ├── <name>.controller.ts   HTTP handlers
    ├── <name>.service.ts      business logic
    ├── <name>.routes.ts       Express router (exports the router)
-   └── <name>.test.ts         Vitest tests
+   └── (tests in server/tests/)
    ```
+   Re-export the table from `server/src/db/schema.ts`, then run `npm run db:generate` to create a migration in `server/drizzle/`.
 2. Register the router in `server/src/modules/index.ts` so it is mounted at `/api/v1/<name>`.
 3. Use the existing auth middleware for protected routes and throw errors for the central error handler instead of sending error responses by hand.
-4. Add tests. They run against mongodb-memory-server, so no database is needed.
+4. Add tests. They run against PGlite (in-process Postgres), so no database is needed.
 
 ## Adding a socket handler
 

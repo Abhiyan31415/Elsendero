@@ -1,20 +1,20 @@
-# Use lightweight Node LTS image
-FROM node:20-alpine
-
-# Set working directory inside container
+# Build stage: compile TypeScript to dist/
+FROM node:20-alpine AS build
 WORKDIR /app
-
-# Copy dependency files first (for efficient layer caching)
 COPY package*.json ./
-
-# Install production dependencies
-RUN npm ci --only=production
-
-# Copy application source code
+RUN npm ci
 COPY . .
+RUN npm run build
 
-# Expose server port (from your .env file)
+# Runtime stage: production deps, compiled code and SQL migrations
+FROM node:20-alpine
+WORKDIR /app
+ENV NODE_ENV=production
+COPY package*.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+COPY --from=build /app/dist ./dist
+COPY drizzle ./drizzle
+USER node
 EXPOSE 5000
-
-# Start the application
-CMD ["node", "index.js"]
+# Migrations run automatically on start.
+CMD ["node", "dist/server.js"]

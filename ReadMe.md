@@ -32,9 +32,9 @@ https://github.com/user-attachments/assets/fbbb3edc-397b-421f-961c-1315e499b2cd
 | --- | --- |
 | Frontend | Next.js 15 (App Router), React, TypeScript, Mapbox GL, Vitest |
 | Backend | Node.js 20, Express, TypeScript, socket.io, Vitest |
-| Data | MongoDB (Mongoose), Redis (optional: socket.io adapter and shared rate limits) |
+| Data | PostgreSQL (Drizzle ORM), Redis (optional: socket.io adapter and shared rate limits) |
 | Storage | Cloudflare R2 (S3-compatible), disk fallback in dev |
-| Hosting | Netlify (frontend), Render (API + Key Value), MongoDB Atlas |
+| Hosting | Netlify (frontend), Render (API + Postgres + Key Value) |
 | CI | GitHub Actions, Dependabot |
 
 ## Repo layout
@@ -50,8 +50,8 @@ https://github.com/user-attachments/assets/fbbb3edc-397b-421f-961c-1315e499b2cd
 ├── docs/
 │   └── ARCHITECTURE.md    request flow, auth, storage, realtime
 ├── .github/               CI workflow and Dependabot config
-├── docker-compose.yml     local Mongo + Redis + API
-├── render.yaml            Render blueprint (API + Key Value)
+├── docker-compose.yml     local Postgres + Redis + API
+├── render.yaml            Render blueprint (API + Postgres + Key Value)
 ├── netlify.toml           Netlify build config for the frontend
 └── .nvmrc                 Node version (20)
 ```
@@ -61,7 +61,7 @@ https://github.com/user-attachments/assets/fbbb3edc-397b-421f-961c-1315e499b2cd
 Requires Docker with Compose v2 and Node 20 (`nvm use`).
 
 ```bash
-# 1. API + MongoDB + Redis on http://localhost:5000
+# 1. API + Postgres + Redis on http://localhost:5000
 docker compose up --build
 
 # 2. Frontend on http://localhost:3000 (in another terminal)
@@ -75,12 +75,12 @@ Compose works without a `server/.env`. Uploads are stored on disk unless you add
 
 ## Manual setup (without Docker)
 
-You need Node 20, a MongoDB instance (local or Atlas) and, optionally, Redis.
+You need Node 20, a PostgreSQL database and, optionally, Redis. Migrations run automatically when the server starts; `npm run seed` loads demo data.
 
 ```bash
 # API
 cd server
-cp .env.example .env         # set MONGO_CONNECT and JWT_SECRET at minimum
+cp .env.example .env         # set DATABASE_URL and JWT_SECRET at minimum
 npm install
 npm run dev                  # http://localhost:5000
 
@@ -97,7 +97,8 @@ npm run dev                  # http://localhost:3000
 
 | Variable | Required | Default | Description |
 | --- | --- | --- | --- |
-| `MONGO_CONNECT` | **yes** | | MongoDB connection string |
+| `DATABASE_URL` | **yes** | | Postgres connection string |
+| `DATABASE_SSL` | no | on in production | Set `false` for internal/local connections without TLS |
 | `JWT_SECRET` | **yes** | | Secret for signing JWTs. Use a long random value |
 | `NODE_ENV` | no | `development` | `development`, `test` or `production` |
 | `PORT` | no | `5000` | HTTP port |
@@ -139,7 +140,7 @@ npm run dev                  # http://localhost:3000
 ## Testing
 
 ```bash
-cd server && npm test      # uses mongodb-memory-server, no services needed
+cd server && npm test      # uses PGlite (in-process Postgres), no services needed
 cd frontend && npm test
 ```
 
@@ -147,7 +148,7 @@ CI (`.github/workflows/ci.yml`) runs lint, typecheck, test and build for both ap
 
 ## Deployment
 
-The frontend runs on Netlify, the API on Render, the database on MongoDB Atlas and media on Cloudflare R2.
+The frontend runs on Netlify, the API on Render, the database on Render Postgres and media on Cloudflare R2.
 
 ### How the URLs relate
 
@@ -155,10 +156,11 @@ The frontend runs on Netlify, the API on Render, the database on MongoDB Atlas a
 - `NEXT_PUBLIC_API_URL` (frontend) = the same URL.
 - `CLIENT_URL` (server) = the frontend origin(s), comma-separated, with no trailing slash, e.g. `https://gantabya.netlify.app,https://gantabya.example.com`. Requests from any other origin are rejected by CORS and socket.io.
 
-### MongoDB Atlas
+### Database
 
-1. Create a cluster and a database user. Copy the `mongodb+srv://…` string into `MONGO_CONNECT`.
-2. Network Access: Render's free tier has no static outbound IPs, so allow `0.0.0.0/0` (and rely on a strong password), or use the outbound IP ranges listed on your Render service's **Connect → Outbound** tab on paid plans.
+`render.yaml` creates a Render Postgres database (`gantabya-db`) and wires its internal connection string into `DATABASE_URL`, so there is nothing to set by hand. Schema migrations in `server/drizzle/` run on every start. To use another provider (Neon, Supabase, …), replace `DATABASE_URL` with its connection string and leave `DATABASE_SSL` unset so TLS is used.
+
+Render's free Postgres expires after 30 days; upgrade the plan or move the data before then.
 
 ### Cloudflare R2
 
@@ -190,8 +192,9 @@ The frontend runs on Netlify, the API on Render, the database on MongoDB Atlas a
 
 1. Render dashboard → **New → Blueprint**, pick this repo. `render.yaml` creates:
    - `gantabya-api`: Docker web service built from `server/Dockerfile`, health check `/health`
+   - `gantabya-db`: Postgres database, wired into `DATABASE_URL`
    - `gantabya-redis`: free Key Value instance, wired into `REDIS_URL`
-2. `JWT_SECRET` is generated automatically. Fill in the variables marked `sync: false` when prompted: `MONGO_CONNECT`, `CLIENT_URL`, `PUBLIC_API_URL`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and optionally `R2_PUBLIC_URL`.
+2. `JWT_SECRET` is generated automatically. Fill in the variables marked `sync: false` when prompted: `CLIENT_URL`, `PUBLIC_API_URL`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `RESEND_API_KEY`, and optionally `R2_PUBLIC_URL`.
 3. After the first deploy, set `PUBLIC_API_URL` to the service URL if you did not know it in advance.
 
 The free plan sleeps after inactivity, so the first request after a while is slow.
@@ -204,7 +207,7 @@ The free plan sleeps after inactivity, so the first request after a while is slo
 
 ### Migrating legacy uploads
 
-Older versions stored uploads in `server/uploads/`. To move them to R2 and rewrite the stored URLs, with the R2 keys and `MONGO_CONNECT` set:
+Older versions stored uploads in `server/uploads/`. To move them to R2 and rewrite the stored URLs, with the R2 keys and `DATABASE_URL` set:
 
 ```bash
 cd server
@@ -214,9 +217,9 @@ npm run migrate:uploads                # do it
 
 ## Security note
 
-Secrets (MongoDB credentials, the JWT secret and the Mapbox token) were committed to this repository's git history in the past. Removing them from the current files does not remove them from history, so treat them as leaked:
+Secrets (old MongoDB credentials, the JWT secret and the Mapbox token) were committed to this repository's git history in the past. Removing them from the current files does not remove them from history, so treat them as leaked:
 
-- **Rotate the MongoDB Atlas database user's password** and update `MONGO_CONNECT`.
+- **Delete or rotate the old MongoDB Atlas database user** (the app no longer uses MongoDB).
 - **Generate a new `JWT_SECRET`** (this logs everyone out).
 - **Revoke and recreate the Mapbox token**, and restrict the new one to your domains.
 
