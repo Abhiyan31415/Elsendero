@@ -14,6 +14,7 @@ COPY package*.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build /app/dist ./dist
 COPY drizzle ./drizzle
+RUN mkdir -p uploads && chown node:node uploads
 USER node
 EXPOSE 5000
 # Migrations run automatically on start.
