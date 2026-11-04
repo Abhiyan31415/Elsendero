@@ -1,0 +1,64 @@
+# Local development stack: MongoDB + Redis + the API.
+#
+#   docker compose up --build
+#
+# Run the frontend separately:  cd frontend && npm run dev
+#
+# R2 keys and other secrets are read from server/.env if it exists. Without
+# R2 keys the server falls back to storing uploads on disk.
+
+name: gantabya
+
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  server:
+    build:
+      context: ./server
+    restart: unless-stopped
+    env_file:
+      - path: ./server/.env
+        required: false
+    # These take precedence over server/.env so the container talks to the
+    # compose services instead of whatever hosts .env points at.
+    environment:
+      NODE_ENV: development
+      PORT: "5000"
+      MONGO_CONNECT: mongodb://mongo:27017/gantabya
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-dev-only-change-me}
+      CLIENT_URL: ${CLIENT_URL:-http://localhost:3000}
+      PUBLIC_API_URL: ${PUBLIC_API_URL:-http://localhost:5000}
+    ports:
+      - "5000:5000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  mongo-data:
