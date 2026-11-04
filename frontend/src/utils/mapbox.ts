@@ -2,17 +2,18 @@ import type { Feature, FeatureCollection, LineString, Point } from 'geojson';
 import { MAPBOX_TOKEN } from '@/config';
 import type { CheckpointTuple, LngLatTuple } from '@/types';
 
-export const MAP_STYLE = 'mapbox://styles/mapbox/streets-v11';
+// Outdoors shows footpaths, trekking trails, contour lines and peaks.
+export const MAP_STYLE = 'mapbox://styles/mapbox/outdoors-v12';
 
 export type RouteFeature = Feature<LineString>;
 
-/** Driving route through the given [lng, lat] waypoints, via the Mapbox Directions API. */
+/** Walking route (follows footpaths and trekking trails) through the given [lng, lat] waypoints, via the Mapbox Directions API. */
 export const fetchRoute = async (waypoints: LngLatTuple[], signal?: AbortSignal): Promise<RouteFeature | null> => {
   if (!MAPBOX_TOKEN || waypoints.length < 2) return null;
   const coordinates = waypoints.map((c) => c.join(',')).join(';');
   try {
     const res = await fetch(
-      `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}?geometries=geojson&overview=full&access_token=${MAPBOX_TOKEN}`,
+      `https://api.mapbox.com/directions/v5/mapbox/walking/${coordinates}?geometries=geojson&overview=full&access_token=${MAPBOX_TOKEN}`,
       { signal },
     );
     const data = (await res.json()) as { routes?: { geometry: LineString }[] };
