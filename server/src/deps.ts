@@ -1,4 +1,5 @@
 import type { Db } from './db/client.js';
+import type { GoogleVerifier } from './lib/google.js';
 import type { Mailer } from './lib/mailer.js';
 import type { Storage } from './lib/storage.js';
 
@@ -7,4 +8,6 @@ export interface AppDeps {
   db: Db;
   storage: Storage;
   mailer: Mailer;
+  /** Absent when GOOGLE_CLIENT_ID isn't set; Google sign-in then returns 503. */
+  google?: GoogleVerifier;
 }

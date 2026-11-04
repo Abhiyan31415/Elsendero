@@ -8,10 +8,12 @@ import {
   requestPasswordReset,
   resendVerification,
   resetPassword,
+  signInWithGoogle,
   verifyEmail,
 } from './auth.service.js';
 import {
   emailOnlySchema,
+  googleSchema,
   loginSchema,
   registerSchema,
   resetPasswordSchema,
@@ -21,7 +23,7 @@ import {
 // Same reply whether or not the account exists.
 const SENT_MESSAGE = 'If an account exists for that email, we sent a link to it.';
 
-export function authController({ db, mailer }: AppDeps) {
+export function authController({ db, mailer, google }: AppDeps) {
   return {
     register: asyncHandler(async (req, res) => {
       const input = registerSchema.parse(req.body ?? {});
@@ -55,6 +57,18 @@ export function authController({ db, mailer }: AppDeps) {
       const { email } = emailOnlySchema.parse(req.body ?? {});
       await requestPasswordReset(db, mailer, email);
       ok(res, { message: SENT_MESSAGE });
+    }),
+
+    google: asyncHandler(async (req, res) => {
+      if (!google) throw new AppError(503, 'Google sign-in is not available right now');
+      const { credential } = googleSchema.parse(req.body ?? {});
+      let profile;
+      try {
+        profile = await google.verify(credential);
+      } catch {
+        throw AppError.unauthorized('Google sign-in failed, please try again');
+      }
+      ok(res, await signInWithGoogle(db, profile));
     }),
 
     resetPassword: asyncHandler(async (req, res) => {

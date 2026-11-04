@@ -1,5 +1,6 @@
 import { eq, sql } from 'drizzle-orm';
 import type { Db } from '../../db/client.js';
+import { trails } from '../trails/trails.schema.js';
 import { users, type UserRow } from './users.schema.js';
 
 /** The signed-in user's own view (includes email). */
@@ -68,4 +69,9 @@ export async function updateUser(
 /** Token user ids are strings; returns null when not a valid numeric id. */
 export function userIdFromToken(id: string): number | null {
   return /^[1-9]\d{0,9}$/.test(id) ? Number(id) : null;
+}
+
+/** Trails keep a copy of the author's photo; refresh it when the user's photo changes. */
+export async function syncAuthorPhoto(db: Db, user: UserRow): Promise<void> {
+  await db.update(trails).set({ uPhoto: user.photoUrl }).where(eq(trails.uid, String(user.id)));
 }

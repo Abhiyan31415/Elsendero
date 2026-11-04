@@ -46,6 +46,8 @@ const schema = z.object({
   REDIS_URL: optionalString,
 
   RESEND_API_KEY: optionalString,
+  /** OAuth client id for "Continue with Google". Google sign-in is off when unset. */
+  GOOGLE_CLIENT_ID: optionalString,
   EMAIL_FROM: z.string().trim().min(1).default('Gantabya <onboarding@resend.dev>'),
   /** Frontend base URL used in email links. Defaults to the first CLIENT_URL origin. */
   APP_URL: optionalString,
@@ -117,6 +119,7 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     LOCAL_STORAGE_DIR: e.LOCAL_STORAGE_DIR,
     REDIS_URL: e.REDIS_URL,
     RESEND_API_KEY: e.RESEND_API_KEY,
+    GOOGLE_CLIENT_ID: e.GOOGLE_CLIENT_ID,
     EMAIL_FROM: e.EMAIL_FROM,
     APP_URL: stripSlash(e.APP_URL ?? origins[0] ?? 'http://localhost:3000'),
     STORAGE_DRIVER: hasKey ? 'r2' : 'disk',

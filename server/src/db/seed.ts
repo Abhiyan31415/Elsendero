@@ -14,9 +14,9 @@ export async function seed(db: Db): Promise<boolean> {
 
   const password = await bcrypt.hash('password123', 12);
   const people = [
-    { name: 'Demo User', email: 'demo@elsendero.app', photoUrl: 'https://randomuser.me/api/portraits/men/3.jpg' },
-    { name: 'Sita Gurung', email: 'sita@example.com', photoUrl: 'https://randomuser.me/api/portraits/women/2.jpg' },
-    { name: 'Ramesh Thapa', email: 'ramesh@example.com', photoUrl: 'https://randomuser.me/api/portraits/men/5.jpg' },
+    { name: 'Demo User', email: 'demo@elsendero.app' },
+    { name: 'Sita Gurung', email: 'sita@example.com' },
+    { name: 'Ramesh Thapa', email: 'ramesh@example.com' },
   ] as const;
   const created = await db
     .insert(users)

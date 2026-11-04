@@ -51,6 +51,14 @@ export const login = async (input: LoginInput, dispatch: Dispatch): Promise<Logi
   return 'ok';
 };
 
+/** Signs in with a Google Identity Services credential (creates the account if needed). */
+export const googleSignIn = async (credential: string, dispatch: Dispatch): Promise<boolean> => {
+  const result = await fetchData<AuthResult>({ url: `${API_BASE}/auth/google`, body: { credential } }, dispatch);
+  if (!result?.token || !result.user) return false;
+  signIn(dispatch, result, `Welcome, ${result.user.name}!`);
+  return true;
+};
+
 /** Asks for a new verification email. The server replies the same way whether or not the account exists. */
 export const resendVerification = async (email: string, dispatch: Dispatch): Promise<boolean> => {
   const result = await fetchData<{ message: string }>(

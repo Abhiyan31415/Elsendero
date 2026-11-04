@@ -37,3 +37,7 @@ export const emailOnlySchema = z.object({ email: emailSchema });
 export const verifyEmailSchema = z.object({ token: tokenSchema });
 
 export const resetPasswordSchema = z.object({ token: tokenSchema, password: passwordSchema });
+
+export const googleSchema = z.object({
+  credential: z.string({ error: 'Google sign-in failed, please try again' }).min(1, 'Google sign-in failed, please try again').max(4096),
+});

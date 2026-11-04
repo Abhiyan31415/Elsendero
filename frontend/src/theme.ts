@@ -13,6 +13,12 @@ const theme = createTheme({
     fontFamily: 'Roboto, "Helvetica Neue", Arial, "Noto Sans Devanagari", sans-serif',
   },
   shape: { borderRadius: 8 },
+  components: {
+    MuiAvatar: {
+      // Google profile photos can refuse requests that carry a Referer header.
+      defaultProps: { slotProps: { img: { referrerPolicy: 'no-referrer' } } },
+    },
+  },
 });
 
 export default theme;

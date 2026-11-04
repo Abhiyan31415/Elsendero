@@ -2,9 +2,11 @@
 
 import { useState, type ChangeEvent, type FormEvent } from 'react';
 import {
+  Box,
   Button,
   CircularProgress,
   Dialog,
+  Divider,
   DialogActions,
   DialogContent,
   DialogContentText,
@@ -15,8 +17,10 @@ import {
   Typography,
 } from '@mui/material';
 import { Close } from '@mui/icons-material';
+import { GOOGLE_CLIENT_ID } from '@/config';
 import { forgotPassword, login, register, resendVerification } from '@/actions/user';
 import { useValue } from '@/context/ContextProvider';
+import GoogleButton from './GoogleButton';
 import PasswordField from './PasswordField';
 import { validateAuthForm, validateEmail, type AuthFormErrors, type AuthFormValues } from './validation';
 
@@ -263,11 +267,23 @@ function Login() {
         <>
           <form onSubmit={handleSubmit} noValidate>
             <DialogContent sx={{ pt: 0 }}>
-              <DialogContentText>
-                {isRegister
-                  ? 'Fill in your details to create an account.'
-                  : 'Welcome back! Log in with your email and password.'}
-              </DialogContentText>
+              {GOOGLE_CLIENT_ID && (
+                <>
+                  <Box sx={{ mt: 1 }}>
+                    <GoogleButton text={isRegister ? 'signup_with' : 'continue_with'} />
+                  </Box>
+                  <Divider sx={{ my: 2, color: 'text.secondary', typography: 'body2' }}>
+                    or use your email
+                  </Divider>
+                </>
+              )}
+              {!GOOGLE_CLIENT_ID && (
+                <DialogContentText>
+                  {isRegister
+                    ? 'Fill in your details to create an account.'
+                    : 'Welcome back! Log in with your email and password.'}
+                </DialogContentText>
+              )}
               {isRegister && (
                 <TextField
                   {...fieldProps('name')}

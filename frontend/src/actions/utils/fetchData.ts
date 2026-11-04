@@ -5,7 +5,7 @@ export const NETWORK_ERROR_MESSAGE = "Can't reach the server. Please check your 
 export const SESSION_EXPIRED_MESSAGE = 'Session expired, please log in again';
 
 // Endpoints where a 401 means "bad credentials", not "expired session".
-const AUTH_ENDPOINT_RE = /\/auth\/(login|register)\/?$/;
+const AUTH_ENDPOINT_RE = /\/auth\/(login|register|google)\/?$/;
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD';
 

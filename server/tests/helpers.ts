@@ -10,6 +10,7 @@ import { createApp } from '../src/app.js';
 import { MIGRATIONS_DIR } from '../src/config/paths.js';
 import type { Db } from '../src/db/client.js';
 import * as schema from '../src/db/schema.js';
+import type { GoogleProfile, GoogleVerifier } from '../src/lib/google.js';
 import { MemoryMailer } from '../src/lib/mailer.js';
 import { DiskStorage } from '../src/lib/storage.js';
 
@@ -32,7 +33,7 @@ export async function createTestContext(): Promise<TestContext> {
   const storageDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gantabya-test-'));
   const storage = new DiskStorage(storageDir, 'http://api.test');
   const mailer = new MemoryMailer();
-  const app = createApp({ db, storage, mailer });
+  const app = createApp({ db, storage, mailer, google: fakeGoogle });
 
   return {
     app,
@@ -46,6 +47,16 @@ export async function createTestContext(): Promise<TestContext> {
     },
   };
 }
+
+/** Test stand-in for Google: the "credential" is the JSON of the profile it should return. */
+export const fakeGoogle: GoogleVerifier = {
+  async verify(credential) {
+    return JSON.parse(credential) as GoogleProfile;
+  },
+};
+
+export const googleCredential = (p: Partial<GoogleProfile> & { email: string }) =>
+  JSON.stringify({ sub: `g-${p.email}`, emailVerified: true, name: 'Google User', picture: 'https://lh3.googleusercontent.com/a/photo', ...p });
 
 let counter = 0;
 

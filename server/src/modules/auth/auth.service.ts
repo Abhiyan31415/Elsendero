@@ -1,13 +1,15 @@
+import crypto from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 import { env } from '../../config/env.js';
 import type { Db } from '../../db/client.js';
 import { pgErrorCode } from '../../lib/errors.js';
 import { AppError } from '../../lib/http.js';
+import type { GoogleProfile } from '../../lib/google.js';
 import type { Email, Mailer } from '../../lib/mailer.js';
 import { signToken } from '../../lib/token.js';
 import { users, type UserRow } from '../users/users.schema.js';
-import { findUserByEmail, findUserById, toSelfUser, type SelfUser } from '../users/users.service.js';
+import { findUserByEmail, findUserById, syncAuthorPhoto, toSelfUser, type SelfUser } from '../users/users.service.js';
 import { passwordResetEmail, verificationEmail } from './auth.emails.js';
 import { consumeToken, issuedRecently, issueToken, revokeTokens } from './auth.tokens.js';
 
@@ -19,14 +21,6 @@ export const EMAIL_NOT_VERIFIED = 'EMAIL_NOT_VERIFIED';
 // Compared against when the email is unknown, so timing doesn't reveal which emails exist.
 const DUMMY_HASH = bcrypt.hashSync('dummy-password-for-timing', BCRYPT_ROUNDS);
 
-const DEFAULT_PHOTOS = [
-  'https://randomuser.me/api/portraits/men/1.jpg',
-  'https://randomuser.me/api/portraits/men/2.jpg',
-  'https://randomuser.me/api/portraits/men/3.jpg',
-  'https://randomuser.me/api/portraits/women/1.jpg',
-  'https://randomuser.me/api/portraits/women/2.jpg',
-  'https://randomuser.me/api/portraits/women/3.jpg',
-];
 
 export interface AuthResult {
   user: SelfUser;
@@ -64,12 +58,11 @@ export async function registerUser(
 ): Promise<RegisterResult> {
   if (await findUserByEmail(db, input.email)) throw AppError.conflict(DUPLICATE_EMAIL);
   const password = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
-  const photoUrl = DEFAULT_PHOTOS[Math.floor(Math.random() * DEFAULT_PHOTOS.length)] ?? '';
   let row: UserRow | undefined;
   try {
     [row] = await db
       .insert(users)
-      .values({ name: input.name, email: input.email, password, photoUrl })
+      .values({ name: input.name, email: input.email, password })
       .returning();
   } catch (err) {
     if (pgErrorCode(err) === '23505') throw AppError.conflict(DUPLICATE_EMAIL);
@@ -143,3 +136,59 @@ export async function resetPassword(db: Db, token: string, newPassword: string):
   await revokeTokens(db, userId, 'verify_email');
   return withToken(toSelfUser(row));
 }
+
+/**
+ * Signs in with a verified Google account. Links to an existing account with the same
+ * email, or creates one. Uses the Google profile photo unless the user uploaded their own.
+ */
+export async function signInWithGoogle(db: Db, profile: GoogleProfile): Promise<AuthResult> {
+  if (!profile.emailVerified) throw AppError.unauthorized('Your Google account email is not verified');
+
+  const [byGoogle] = await db.select().from(users).where(eq(users.googleId, profile.sub)).limit(1);
+  const existing = byGoogle ?? (await findUserByEmail(db, profile.email));
+
+  if (existing) {
+    // Keep a photo the user uploaded themselves; otherwise use (or refresh) Google's.
+    const uploadedOwn = Boolean(existing.photoUrl) && !isGooglePhoto(existing.photoUrl);
+    const photoUrl = uploadedOwn || !profile.picture ? existing.photoUrl : profile.picture;
+    const [row] = await db
+      .update(users)
+      .set({
+        googleId: profile.sub,
+        photoUrl,
+        emailVerifiedAt: existing.emailVerifiedAt ?? new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, existing.id))
+      .returning();
+    if (!row) throw AppError.unauthorized();
+    if (row.photoUrl !== existing.photoUrl) await syncAuthorPhoto(db, row);
+    // A pending verification link is no longer needed.
+    await revokeTokens(db, row.id, 'verify_email');
+    return withToken(toSelfUser(row));
+  }
+
+  // New account. It has no usable password until the user sets one via "Forgot password".
+  const password = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), BCRYPT_ROUNDS);
+  try {
+    const [row] = await db
+      .insert(users)
+      .values({
+        name: profile.name.slice(0, 50),
+        email: profile.email,
+        password,
+        photoUrl: profile.picture,
+        googleId: profile.sub,
+        emailVerifiedAt: new Date(),
+      })
+      .returning();
+    if (!row) throw new Error('Insert returned no row');
+    return withToken(toSelfUser(row));
+  } catch (err) {
+    // Two sign-ins racing for the same new account: the other one won, so link to it.
+    if (pgErrorCode(err) === '23505') return signInWithGoogle(db, profile);
+    throw err;
+  }
+}
+
+const isGooglePhoto = (url: string) => /^https:\/\/[a-z0-9-]+\.googleusercontent\.com\//.test(url);

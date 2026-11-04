@@ -28,5 +28,6 @@ export default function authRoutes(deps: AppDeps): Router {
   router.post('/resend-verification', emailLimiter, c.resendVerification);
   router.post('/forgot-password', emailLimiter, c.forgotPassword);
   router.post('/reset-password', limiter, c.resetPassword);
+  router.post('/google', limiter, c.google);
   return router;
 }

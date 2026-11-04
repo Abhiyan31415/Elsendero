@@ -8,6 +8,7 @@ import {
   toSelfUser,
   updateUser,
   userIdFromToken,
+  syncAuthorPhoto,
 } from './users.service.js';
 import { updateMeSchema } from './users.validators.js';
 
@@ -19,6 +20,7 @@ export function usersController({ db }: AppDeps) {
       const id = userIdFromToken(currentUser(req).id);
       const row = id ? await updateUser(db, id, patch) : undefined;
       if (!row) throw AppError.notFound('User not found');
+      if (patch.photoURL !== undefined) await syncAuthorPhoto(db, row);
       const user = toSelfUser(row);
       ok(res, { user, token: signToken(user) });
     }),

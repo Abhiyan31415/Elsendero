@@ -12,9 +12,14 @@ export const users = pgTable(
     photoUrl: text('photo_url').notNull().default(''),
     /** Null until the user clicks the link in their verification email. */
     emailVerifiedAt: timestamp('email_verified_at', { withTimezone: true }),
+    /** Google account id (`sub`) once the user has signed in with Google. */
+    googleId: text('google_id'),
     ...timestamps,
   },
-  (t) => [uniqueIndex('users_email_lower_idx').on(sql`lower(${t.email})`)],
+  (t) => [
+    uniqueIndex('users_email_lower_idx').on(sql`lower(${t.email})`),
+    uniqueIndex('users_google_id_idx').on(t.googleId),
+  ],
 );
 
 export type UserRow = typeof users.$inferSelect;
