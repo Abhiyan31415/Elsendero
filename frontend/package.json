@@ -31,7 +31,7 @@
     "react-map-gl": "^7.1.9",
     "server-only": "^0.0.1",
     "socket.io-client": "^4.8.1",
-    "supercluster": "^8.0.1",
+    "supercluster": "^9.1.0",
     "swiper": "^11.1.14"
   },
   "devDependencies": {
