@@ -1,0 +1,66 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# Deploys the Gantabya API (Docker), a Render Postgres database, and a free
+# Render Key Value (Redis) instance used by the socket.io adapter and shared rate limits.
+
+services:
+  - type: web
+    name: gantabya-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./server/Dockerfile
+    dockerContext: ./server
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "5000"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gantabya-db
+          property: connectionString
+      - key: DATABASE_SSL
+        value: "false" # internal connection on Render's private network
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: CLIENT_URL
+        sync: false
+      - key: PUBLIC_API_URL
+        sync: false
+      - key: R2_ENDPOINT
+        value: https://cef3bc5e60493c2cde2fa645dac8c39f.r2.cloudflarestorage.com
+      - key: R2_BUCKET
+        value: gantabya
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_PUBLIC_URL
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: gantabya-redis
+          property: connectionString
+
+  - type: keyvalue
+    name: gantabya-redis
+    plan: free
+    maxmemoryPolicy: noeviction
+    ipAllowList: [] # only reachable from services on Render's private network
+
+databases:
+  - name: gantabya-db
+    plan: free
+    databaseName: gantabya
+    user: gantabya
+    ipAllowList: [] # only reachable from services on Render's private network

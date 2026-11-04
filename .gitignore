@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Environment files (never commit secrets)
+.env
+.env.*
+!.env.example
+
+# Build output
+.next/
+out/
+dist/
+*.tsbuildinfo
+
+# Test output
+coverage/
+
+# Local uploads (dev disk-storage fallback)
+server/uploads/
+
+# Logs
+npm-debug.log*
+*.log
+
+# Netlify / editors / OS
+.netlify/
+.idea/
+.DS_Store
+Thumbs.db
