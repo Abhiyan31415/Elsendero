@@ -3,65 +3,77 @@ import { Box, Container, TextField, IconButton, Paper, Typography } from "@mui/m
 import SendIcon from "@mui/icons-material/Send";
 import axios from "axios";
 import io from "socket.io-client";
+import { API_URL, SOCKET_URL } from "../config";
+import { useValue } from "../context/ContextProvider";
 
 const ChatComponent = ({ eventId }) => {
+    const { state: { currentUser } } = useValue();
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
-    const [username, setUsername] = useState("");
-    const [userId, setUserId] = useState("");
-    const [loading, setLoading] = useState(true);
+    const [connected, setConnected] = useState(false);
     const socket = useRef(null);
+    const bottomRef = useRef(null);
 
+    const userId = currentUser?.id;
+    const token = currentUser?.token;
+
+    // Load message history for the selected event.
     useEffect(() => {
-        const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-        if (currentUser && currentUser.name && currentUser.id) {
-            setUsername(currentUser.name);
-            setUserId(currentUser.id);
-        }
-        setLoading(false);
-    }, []);
+        if (!eventId) return;
+        let cancelled = false;
+        setMessages([]);
+        axios
+            .get(`${API_URL}/messages`, {
+                params: { eventId },
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+            })
+            .then((response) => {
+                if (!cancelled) setMessages(Array.isArray(response.data) ? response.data : []);
+            })
+            .catch((error) => console.error("Error fetching messages:", error));
+        return () => {
+            cancelled = true;
+        };
+    }, [eventId, token]);
 
+    // (Re)connect the socket whenever the user or event changes.
     useEffect(() => {
-        if (!userId || !username || !eventId) return;
+        if (!token || !eventId) return;
 
-        socket.current = io("https://redly-phonological-mariam.ngrok-free.dev", { query: { userId, username } });
+        const s = io(SOCKET_URL, { auth: { token } });
+        socket.current = s;
 
-        socket.current.on("connect", () => {
-            console.log("Connected to server");
-            socket.current.emit("join room", eventId);
+        s.on("connect", () => {
+            setConnected(true);
+            s.emit("join room", eventId);
         });
-
-        socket.current.on("chat message", (message) => {
-            setMessages((prevMessages) => [...prevMessages, message]);
-            console.log("New message received:", message);
+        s.on("disconnect", () => setConnected(false));
+        s.on("connect_error", (err) => {
+            setConnected(false);
+            console.error("Socket connection error:", err.message);
         });
-
-        fetchMessages();
+        s.on("chat message", (message) => {
+            if (message?.eventId && String(message.eventId) !== String(eventId)) return;
+            setMessages((prev) => [...prev, message]);
+        });
 
         return () => {
-            if (socket.current) {
-                socket.current.disconnect();
-                console.log("Socket disconnected");
-            }
+            s.off();
+            s.disconnect();
+            if (socket.current === s) socket.current = null;
+            setConnected(false);
         };
-    }, [userId, username, eventId]);
+    }, [token, eventId]);
 
-    const fetchMessages = async () => {
-        if (!eventId) return;
-        try {
-            const response = await axios.get(`https://redly-phonological-mariam.ngrok-free.dev/messages?eventId=${eventId}`);
-            setMessages(response.data);
-        } catch (error) {
-            console.error("Error fetching messages:", error);
-        }
-    };
+    useEffect(() => {
+        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
 
     const handleSendMessage = () => {
-        if (newMessage.trim()) {
-            const messageData = { eventId, userId, username, content: newMessage };
-            socket.current.emit("chat message", messageData);
-            setNewMessage("");
-        }
+        const content = newMessage.trim();
+        if (!content || !socket.current || !connected) return;
+        socket.current.emit("chat message", { eventId, content });
+        setNewMessage("");
     };
 
     const handleKeyDown = (e) => {
@@ -71,8 +83,13 @@ const ChatComponent = ({ eventId }) => {
         }
     };
 
-    if (loading) return <div>Loading...</div>;
-    if (!userId) return <div>User Not Logged In</div>;
+    if (!currentUser || !token) {
+        return (
+            <Box sx={{ p: 3, textAlign: "center" }}>
+                <Typography variant="body1">Please log in to join the chat.</Typography>
+            </Box>
+        );
+    }
 
     return (
         <Box sx={{ height: "100vh", display: "flex", flexDirection: "column" }}>
@@ -83,7 +100,7 @@ const ChatComponent = ({ eventId }) => {
                             key={index}
                             sx={{
                                 display: "flex",
-                                justifyContent: message.userId === userId ? "flex-end" : "flex-start",
+                                justifyContent: String(message.userId) === String(userId) ? "flex-end" : "flex-start",
                                 mb: 2,
                             }}
                         >
@@ -92,15 +109,15 @@ const ChatComponent = ({ eventId }) => {
                                 sx={{
                                     maxWidth: "70%",
                                     p: 2,
-                                    bgcolor: message.userId === userId ? "#06402b" : "grey.300",
-                                    color: message.userId === userId ? "primary.contrastText" : "text.primary",
+                                    bgcolor: String(message.userId) === String(userId) ? "#06402b" : "grey.300",
+                                    color: String(message.userId) === String(userId) ? "primary.contrastText" : "text.primary",
                                 }}
                             >
                                 <Typography
                                     variant="caption"
                                     sx={{
                                         mb: 0.5,
-                                        color: message.userId === userId ? "yellow" : "blue",
+                                        color: String(message.userId) === String(userId) ? "yellow" : "blue",
                                     }}
                                 >
                                     {message.username}
@@ -109,6 +126,7 @@ const ChatComponent = ({ eventId }) => {
                             </Paper>
                         </Box>
                     ))}
+                    <div ref={bottomRef} />
                 </Container>
             </Box>
             <Paper elevation={3} sx={{ p: 2, bgcolor: "background.paper" }}>
@@ -128,6 +146,7 @@ const ChatComponent = ({ eventId }) => {
                         <IconButton
                             color="primary"
                             onClick={handleSendMessage}
+                            disabled={!connected || !newMessage.trim()}
                             sx={{
                                 bgcolor: "#06402b",
                                 color: "white",

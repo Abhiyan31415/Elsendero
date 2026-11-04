@@ -5,8 +5,11 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import ChatComponent from '../ChatComponent';
+import { API_URL } from '../../config';
+import { useValue } from '../../context/ContextProvider';
 
 function EventCard() {
+  const { state: { currentUser }, dispatch } = useValue();
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [openAddEventDialog, setOpenAddEventDialog] = useState(false);
@@ -23,8 +26,8 @@ function EventCard() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await axios.get('https://redly-phonological-mariam.ngrok-free.dev/api/events');
-        setEvents(response.data);
+        const response = await axios.get(`${API_URL}/api/events`);
+        setEvents(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
         console.error('Error fetching events:', error);
       }
@@ -41,7 +44,13 @@ function EventCard() {
   // Handle adding a new event
   const handleAddEvent = async () => {
     try {
-      const response = await axios.post('https://redly-phonological-mariam.ngrok-free.dev/api/events', newEvent);
+      if (!currentUser?.token) {
+        dispatch({ type: 'UPDATE_ALERT', payload: { open: true, severity: 'error', message: 'Please log in to add an event' } });
+        return;
+      }
+      const response = await axios.post(`${API_URL}/api/events`, newEvent, {
+        headers: { Authorization: `Bearer ${currentUser.token}` },
+      });
       setEvents((prevEvents) => [...prevEvents, response.data]); // Add the newly created event
       setNewEvent({
         title: '',
@@ -54,6 +63,10 @@ function EventCard() {
       setOpenAddEventDialog(false);
     } catch (error) {
       console.error('Error adding event:', error);
+      dispatch({
+        type: 'UPDATE_ALERT',
+        payload: { open: true, severity: 'error', message: error.response?.data?.message || 'Failed to add event' },
+      });
     }
   };
 
@@ -73,7 +86,7 @@ function EventCard() {
 
       <Grid container spacing={3}>
         {events.map((event) => (
-          <Grid item xs={12} sm={6} md={4} key={event.id}>
+          <Grid item xs={12} sm={6} md={4} key={event._id || event.id}>
             <Card
               sx={{ p: 2, cursor: 'pointer', boxShadow: 4, transition: '0.3s', ':hover': { boxShadow: 6 } }}
               onClick={() => handleCardClick(event)}
@@ -88,7 +101,7 @@ function EventCard() {
                   <strong>Location:</strong> {event.location}
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
-                  <strong>Participants:</strong> {event.participants.join(', ')}
+                  <strong>Participants:</strong> {(event.participants || []).join(', ')}
                 </Typography>
               </CardContent>
             </Card>
@@ -152,7 +165,7 @@ function EventCard() {
             label="Participants (comma separated)"
             fullWidth
             value={newEvent.participants.join(', ')}
-            onChange={(e) => setNewEvent({ ...newEvent, participants: e.target.value.split(',') })}
+            onChange={(e) => setNewEvent({ ...newEvent, participants: e.target.value.split(',').map((p) => p.trimStart()) })}
             sx={{ mb: 2 }}
           />
         </DialogContent>

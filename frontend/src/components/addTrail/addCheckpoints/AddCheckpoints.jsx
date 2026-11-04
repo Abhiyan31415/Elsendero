@@ -1,3 +1,4 @@
+import { MAPBOX_TOKEN } from '../../../config';
 import React, { useState, useEffect } from 'react';
 import { Box, TextField, Tooltip, Typography } from '@mui/material';
 import ReactMapGL, { Marker, NavigationControl, Source, Layer, Popup } from 'react-map-gl';
@@ -36,7 +37,7 @@ function AddCheckpoints() {
     try {
       const coordinates = waypoints.map(coord => coord.join(',')).join(';');
       const response = await fetch(
-        `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}?geometries=geojson&overview=full&access_token=pk.eyJ1IjoiYWJoaXlhbjEyMTIiLCJhIjoiY20zNnQwNWJnMGFsbzJqc2wxMTh2a2JjaCJ9.QY9Xj_GfNoO9yu9nkiMb1g`
+        `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}?geometries=geojson&overview=full&access_token=${MAPBOX_TOKEN}`
       );
       
       const data = await response.json();
@@ -228,7 +229,7 @@ function AddCheckpoints() {
         {...viewport}
         width="100%"
         height="100%"
-        mapboxAccessToken='pk.eyJ1IjoiYWJoaXlhbjEyMTIiLCJhIjoiY20zNnQwNWJnMGFsbzJqc2wxMTh2a2JjaCJ9.QY9Xj_GfNoO9yu9nkiMb1g'
+        mapboxAccessToken={MAPBOX_TOKEN}
         onMove={evt => setViewport(evt.viewport)}
         mapStyle="mapbox://styles/mapbox/streets-v11"
         onClick={handleMapClick}

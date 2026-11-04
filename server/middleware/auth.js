@@ -1,19 +1,22 @@
-import jwt from 'jsonwebtoken';
+import { verifyToken } from '../utils/token.js';
 
+const NOT_AUTHORIZED = 'Not authorized, please log in again';
 
-const auth = async (req, res, next) => {
-    try{
-        const token = req.headers.authorization.split(' ')[1];
-        const decodedToken=jwt.verify(token,process.env.JWT_SECRET);
-        const{id,name,photoURL}=decodedToken;
-        req.user={id,name,photoURL};
-        next();
-    }catch(error){
-        console.log(error)
-        res.status(401).json({
-            success:false,
-            message:"Something went wrong with authorization"
-        })
-    }
-}
+const auth = (req, res, next) => {
+  const header = req.headers.authorization;
+  if (typeof header !== 'string') {
+    return res.status(401).json({ success: false, message: NOT_AUTHORIZED });
+  }
+  const [scheme, token] = header.split(' ');
+  if (scheme !== 'Bearer' || !token) {
+    return res.status(401).json({ success: false, message: NOT_AUTHORIZED });
+  }
+  try {
+    req.user = verifyToken(token);
+    return next();
+  } catch {
+    return res.status(401).json({ success: false, message: NOT_AUTHORIZED });
+  }
+};
+
 export default auth;

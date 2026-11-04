@@ -1,7 +1,5 @@
-import { useState ,useRef,useEffect} from 'react'
+import { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 import NavBar from './components/NavBar'
 import Login from './components/user/Login'
@@ -10,37 +8,34 @@ import Loading from './components/Loading'
 import ChatComponent from './components/ChatComponent'
 import BottomNav from './components/BottomNav'
 import ClusterMap from './components/map/ClusterMap'
-// import EventsAdd from './components/events/EventsAdd'
-// import EventPage from './components/events/EventPage'
 import AddTrails from './components/addTrail/AddTrails'
 import Protected from './components/protected/Protected'
 import TrailsInfo from './components/trailsInfo/TrailsInfo'
 import TrailInfo from './components/trailsInfo/TrailInfo'
 import EventCard from './components/events/EventCard'
-// import Login from './components/user/Login'
+import useCheckToken from './components/hooks/useCheckToken'
 
 function App() {
-  const [value, setValue] = useState(0);
-  const ref = useRef();
-  useEffect(() => {
-    
-  }, [value]);
+  // AddTrails resets its step via setPage after a successful submit.
+  const [, setPage] = useState(0)
+  useCheckToken()
+
   return (
     <Router>
       <Loading />
       <Notification />
       <Login />
       <NavBar />
-      <TrailInfo/>
+      <TrailInfo />
       <Routes>
         <Route path="/" element={<Navigate to="/map" replace />} />
         <Route path="/map" element={<ClusterMap />} />
-        <Route path="/events" element={<EventCard/>} />
-        <Route path='/trail' element={<TrailsInfo/>}/>
-        <Route path="/add-trails" element={<Protected><AddTrails setPage={setValue}/></Protected>} />
-        <Route path="/chat" element={<ChatComponent />} />
+        <Route path="/events" element={<EventCard />} />
+        <Route path="/trail" element={<TrailsInfo />} />
+        <Route path="/add-trails" element={<Protected><AddTrails setPage={setPage} /></Protected>} />
+        <Route path="/chat" element={<Protected><ChatComponent /></Protected>} />
+        <Route path="*" element={<Navigate to="/map" replace />} />
       </Routes>
-
       <BottomNav />
     </Router>
   )

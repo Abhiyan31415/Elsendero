@@ -9,13 +9,11 @@ const reducer=(state,action)=>{
         case 'END_LOADING':
                 return {...state,loading:false} 
         case 'UPDATE_USER':
-            // localStorage.setItem('currentUser',JSON.stringify(action.payload))
-            if (action.payload) {
-                localStorage.setItem('currentUser', JSON.stringify(action.payload));
-            } else {
-                localStorage.removeItem('currentUser');
-            }
-            return {...state,currentUser:action.payload}
+            persistUser(action.payload)
+            return {...state,currentUser:action.payload || null}
+        case 'LOGOUT':
+            persistUser(null)
+            return {...state,currentUser:null,profile:{open:false,file:null,photoURL:''}}
         case 'UPDATE_ALERT':
             return {...state,alert:action.payload}
         case 'UPDATE_PROFILE':
@@ -35,7 +33,7 @@ const reducer=(state,action)=>{
                       ...state,
                       checkpoints: state.checkpoints.filter((_, index) => index !== action.payload)
                     };
-        case 'UPDATE_CHECKPOINT':
+        case 'UPDATE_CHECKPOINT': {
                         const updatedCheckpoints = [...state.checkpoints];
                         updatedCheckpoints[action.payload.index] = {
                           ...updatedCheckpoints[action.payload.index],
@@ -44,9 +42,8 @@ const reducer=(state,action)=>{
                         return {
                           ...state,
                           checkpoints: updatedCheckpoints
-        
-
                         };
+        }
         case 'RESET_TRAIL':
             return {...state,images:[],details:{title:'',description:'',price:0},slocation:{lng:0,lat:0},flocation:{lng:0,lat:0},checkpoints:[]}
         case 'UPDATE_TRAILS':
@@ -67,10 +64,22 @@ const reducer=(state,action)=>{
             return {...state,addressFilter:null,priceFilter:150}
         
         default:
-            throw new Error('No matched action:')
+            throw new Error(`No matched action: ${action.type}`)
     }
 }
 export default reducer;
+
+const persistUser=(user)=>{
+    try{
+        if(user){
+            localStorage.setItem('currentUser',JSON.stringify(user))
+        }else{
+            localStorage.removeItem('currentUser')
+        }
+    }catch(error){
+        console.error('Could not persist currentUser',error)
+    }
+}
 
 const applyFilter=(trails,address,price)=>{
     let filteredtrails=trails

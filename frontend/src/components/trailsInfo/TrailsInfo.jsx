@@ -1,3 +1,4 @@
+import { toImageUrl, trailImages } from '../../utils/imageUrl';
 import React, { useState } from 'react';
 import {
   Avatar,
@@ -100,13 +101,13 @@ const TrailsInfo = () => {
                 }
                 actionIcon={
                   <Tooltip title={trail.uName} sx={{ mr: '5px' }}>
-                    <Avatar src={trail.uPhoto} sx={{ width: 36, height: 36 }} />
+                    <Avatar src={toImageUrl(trail.uPhoto)} sx={{ width: 36, height: 36 }} />
                   </Tooltip>
                 }
                 position="top"
               />
               <img
-                src={trail.images[0][0]}
+                src={trailImages(trail.images)[0]}
                 alt={trail.title}
                 loading="lazy"
                 style={{

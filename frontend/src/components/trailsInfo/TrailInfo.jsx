@@ -1,3 +1,5 @@
+import { MAPBOX_TOKEN } from '../../config';
+import { trailImages } from '../../utils/imageUrl';
 import { Avatar, Box, Container, Dialog, IconButton, Rating, Stack, Toolbar, Tooltip, Typography } from '@mui/material';
 import React, { forwardRef, useEffect, useState } from 'react';
 import { useValue } from '../../context/ContextProvider';
@@ -30,13 +32,13 @@ const TrailInfo = () => {
 
     useEffect(() => {
         if (trail) {
-            const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${trail.sloc[0]},${trail.sloc[1]}.json?access_token=pk.eyJ1IjoiYWJoaXlhbjEyMTIiLCJhIjoiY20zNnQwNWJnMGFsbzJqc2wxMTh2a2JjaCJ9.QY9Xj_GfNoO9yu9nkiMb1g`;
+            const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${trail.sloc[0]},${trail.sloc[1]}.json?access_token=${MAPBOX_TOKEN}`;
             fetch(url)
                 .then((res) => res.json())
                 .then((data) => {
                     setSplace(data.features[0]?.place_name);
                 });
-            const url2 = `https://api.mapbox.com/geocoding/v5/mapbox.places/${trail.floc[0]},${trail.floc[1]}.json?access_token=pk.eyJ1IjoiYWJoaXlhbjEyMTIiLCJhIjoiY20zNnQwNWJnMGFsbzJqc2wxMTh2a2JjaCJ9.QY9Xj_GfNoO9yu9nkiMb1g`;
+            const url2 = `https://api.mapbox.com/geocoding/v5/mapbox.places/${trail.floc[0]},${trail.floc[1]}.json?access_token=${MAPBOX_TOKEN}`;
             fetch(url2)
                 .then((res) => res.json())
                 .then((data) => {
@@ -87,7 +89,7 @@ const TrailInfo = () => {
                         slideShadows: true,
                     }}
                 >
-                    {trail?.images[0]?.map((url) => (
+                    {trailImages(trail?.images).map((url) => (
                         <SwiperSlide key={url}>
                             <div className="swiper-zoom-container">
                                 <img

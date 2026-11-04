@@ -9,6 +9,7 @@ const eventSchema = new mongoose.Schema(
     to: { type: Date, required: true },
     location: { type: String, required: true },
     participants: { type: [String], default: [] }, // array of participant usernames
+    createdBy: { type: String }, // user id of the creator (from auth token)
   },
   { timestamps: true }
 );

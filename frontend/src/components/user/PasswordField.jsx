@@ -1,40 +1,43 @@
-import React,{useState} from 'react'
+/* eslint-disable react/prop-types */
+import { useState } from 'react';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { IconButton, InputAdornment, TextField } from '@mui/material';
-function PasswordField({passwordRef,id='password',label='Password'}) {
-    const [showPassword ,setShowPassword]=useState(false)
-    const handleClick=()=>{
-        setShowPassword(!showPassword)
-    }
-    const handleMouseDown=(e)=>{
-        e.preventDefault()
-    }
-  return (
-    <TextField
-                
-                margin="normal"
-                variant='standard'
-                id={id}
-                label={label}
-                type={showPassword?'text':'password'}
-                fullWidth
-                inputRef={passwordRef}
-                inputProps={{minLength:6}}
-                required
-                InputProps={{
-                    endAdornment:(
-                        <InputAdornment position='end'>
+
+/** MUI TextField for passwords with a show/hide toggle. Extra props go to TextField. */
+function PasswordField({ id = 'password', label = 'Password', autoComplete = 'current-password', ...props }) {
+    const [showPassword, setShowPassword] = useState(false);
+
+    return (
+        <TextField
+            margin="normal"
+            variant="standard"
+            fullWidth
+            required
+            {...props}
+            id={id}
+            name={id}
+            label={label}
+            autoComplete={autoComplete}
+            type={showPassword ? 'text' : 'password'}
+            slotProps={{
+                input: {
+                    endAdornment: (
+                        <InputAdornment position="end">
                             <IconButton
-                            onClick={handleClick} onMouseDown={handleMouseDown}
+                                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                onClick={() => setShowPassword((s) => !s)}
+                                onMouseDown={(e) => e.preventDefault()}
+                                edge="end"
+                                tabIndex={-1}
                             >
-                                {showPassword?<VisibilityOff/>:<Visibility />}
+                                {showPassword ? <VisibilityOff /> : <Visibility />}
                             </IconButton>
                         </InputAdornment>
-                    )
-                }}
-
-            />
-  )
+                    ),
+                },
+            }}
+        />
+    );
 }
 
-export default PasswordField
+export default PasswordField;

@@ -3,11 +3,24 @@
   command = "npm run build"
   publish = "dist"
 
-[[redirects]]
-  from = "/api/*"
-  to = "https://redly-phonological-mariam.ngrok-free.dev/api/:splat"
-  status = 200
-  force = true
+[build.environment]
+  NODE_VERSION = "20"
+  # VITE_API_URL and VITE_MAPBOX_TOKEN must be set in the Netlify UI
+  # (Site configuration -> Environment variables). The frontend calls the
+  # backend directly at VITE_API_URL, so no API proxy redirect is needed.
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Vite emits content-hashed filenames under /assets, so they can be cached forever.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
 
 # SPA fallback rule (keep this at the bottom of the file)
 [[redirects]]

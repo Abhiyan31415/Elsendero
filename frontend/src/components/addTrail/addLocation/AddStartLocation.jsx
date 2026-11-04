@@ -1,3 +1,4 @@
+import { MAPBOX_TOKEN } from '../../../config';
 import { Box } from '@mui/material'
 import React, { useEffect, useRef } from 'react'
 import ReactMapGL, { GeolocateControl, Marker, NavigationControl } from 'react-map-gl'
@@ -33,7 +34,7 @@ function AddStartLocation() {
     >
       <ReactMapGL
       ref={mapRef}
-      mapboxAccessToken={'pk.eyJ1IjoiYWJoaXlhbjEyMTIiLCJhIjoiY20zNnQwNWJnMGFsbzJqc2wxMTh2a2JjaCJ9.QY9Xj_GfNoO9yu9nkiMb1g'}
+      mapboxAccessToken={MAPBOX_TOKEN}
         initialViewState={{
           latitude:lat,
           longitude:lng,

@@ -1,3 +1,4 @@
+import { trailImages } from '../../utils/imageUrl';
 import { Box, ImageListItem, ImageListItemBar } from '@mui/material'
 import React from 'react'
 import { Card } from '@mui/material'
@@ -54,7 +55,7 @@ const PopupTrail = ({popupInfo}) => {
                 zIndex:1}}
 
             >
-                {images[0].map((url,index)=>(
+                {trailImages(images).map((url,index)=>(
                     <SwiperSlide key={url}>
                         <Box
                         component='img'

@@ -1,22 +1,22 @@
 import { Paper } from '@mui/material';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import ProgressList from './progressList/ProgressList';
 import ImagesList from './ImagesList';
 import { useValue } from '../../../context/ContextProvider';
 import uploadFile from '../../../firebase/uploadFile';
-function AddImages({ userId }) {
-  const [files, setFiles] = useState([]);
-  const { state:{images,currentUser},dispatch } = useValue();
+function AddImages() {
+  const { state:{currentUser},dispatch } = useValue();
   const onDrop = useCallback((acceptedFiles) => {
-    setFiles(acceptedFiles);
     const uploadPromises = acceptedFiles.map(async (file) => {
       try {
-        const filePath = await uploadFile(file, currentUser.id);
-        dispatch({ type: 'UPDATE_IMAGES', payload: filePath });
-        console.log(images);
+        const imageUrl = await uploadFile(file, `trails/${currentUser?.id}`);
+        dispatch({ type: 'UPDATE_IMAGES', payload: imageUrl });
       } catch (error) {
         console.error(error);
+        dispatch({
+          type: 'UPDATE_ALERT',
+          payload: { open: true, severity: 'error', message: error.message || 'Image upload failed' },
+        });
       }
     });
 
@@ -34,11 +34,6 @@ function AddImages({ userId }) {
     accept: { 'image/*': [] },
 
   });
-
-  const handleUploadComplete = () => {
-    setFiles([]);
-    
-  };
 
   return (
     <>
@@ -61,7 +56,6 @@ function AddImages({ userId }) {
           <em>(images with .jpg, .png , .jpeg will be accepted)</em>
         </div>
       </Paper>
-      <ProgressList files={files} userId={userId} onUploadComplete={handleUploadComplete} />
       <ImagesList />
     </>
   );

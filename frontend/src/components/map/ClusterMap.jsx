@@ -1,3 +1,5 @@
+import { MAPBOX_TOKEN } from '../../config';
+import { toImageUrl } from '../../utils/imageUrl';
 import React, { useEffect, useState } from 'react';
 import { useValue } from '../../context/ContextProvider';
 import { getTrails } from '../../actions/trail';
@@ -99,7 +101,7 @@ function ClusterMap() {
     try {
       const coordinates = waypoints.map((coord) => coord.join(',')).join(';');
       const response = await fetch(
-        `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}?geometries=geojson&overview=full&access_token=pk.eyJ1IjoiYWJoaXlhbjEyMTIiLCJhIjoiY20zNnQwNWJnMGFsbzJqc2wxMTh2a2JjaCJ9.QY9Xj_GfNoO9yu9nkiMb1g`
+        `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}?geometries=geojson&overview=full&access_token=${MAPBOX_TOKEN}`
       );
       const data = await response.json();
       if (data.routes && data.routes[0]) {
@@ -128,7 +130,7 @@ function ClusterMap() {
     <div style={{ height: '100vh', width: '100%' }}>
       <ReactMapGL
         initialViewState={{ latitude: 27, longitude: 88, zoom: 6 }}
-        mapboxAccessToken={'pk.eyJ1IjoiYWJoaXlhbjEyMTIiLCJhIjoiY20zNnQwNWJnMGFsbzJqc2wxMTh2a2JjaCJ9.QY9Xj_GfNoO9yu9nkiMb1g'}
+        mapboxAccessToken={MAPBOX_TOKEN}
         mapStyle="mapbox://styles/mapbox/streets-v11"
         ref={mapRef}
         onZoomEnd={(e) => setZoom(Math.round(e.viewState.zoom))}
@@ -173,7 +175,7 @@ function ClusterMap() {
             >
               <Tooltip title={cluster.properties.uName}>
                 <Avatar
-                  src={cluster.properties.uPhoto}
+                  src={toImageUrl(cluster.properties.uPhoto)}
                   component={Paper}
                   elevation={2}
                   onMouseEnter={() => handlePopupOpen(cluster.properties)}

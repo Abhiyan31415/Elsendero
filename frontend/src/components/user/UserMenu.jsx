@@ -1,48 +1,56 @@
-import { Logout, Settings } from '@mui/icons-material'
-import { ListItemIcon, Menu, MenuItem } from '@mui/material'
-import React from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useValue } from '../../context/ContextProvider'
-import useCheckToken from '../hooks/useCheckToken'
-import Profile from './Profile'
-
+/* eslint-disable react/prop-types */
+import { Logout, Settings } from '@mui/icons-material';
+import { Divider, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
+import { useValue } from '../../context/ContextProvider';
+import { logout } from '../../actions/user';
+import Profile from './Profile';
 
 const UserMenu = ({ anchorUserMenu, setAnchorUserMenu }) => {
-    useCheckToken()
-    const navigate = useNavigate() // Add useNavigate
-    const { dispatch, state: { currentUser } } = useValue()
-    
-    const handleCloseUserMenu = () => {
-        setAnchorUserMenu(null)
-    }
+    const { dispatch, state: { currentUser } } = useValue();
 
-    const handleLogout = () => {
-        localStorage.removeItem("currentUser")
-        dispatch({ type: 'UPDATE_USER', payload: null })
-        // setAnchorUserMenu(null)
-        dispatch({ type: 'OPEN_LOGIN' });
-        navigate('/login') // Redirect to login page after logout
-    }
+    const handleCloseUserMenu = () => setAnchorUserMenu(null);
+
+    const openProfile = () => {
+        dispatch({
+            type: 'UPDATE_PROFILE',
+            payload: { open: true, file: null, photoURL: currentUser?.photoURL || '' },
+        });
+    };
+
+    const handleLogout = () => logout(dispatch);
 
     return (
         <>
-            <Menu anchorEl={anchorUserMenu} open={Boolean(anchorUserMenu)} onClose={handleCloseUserMenu} onClick={handleCloseUserMenu}>
-                <MenuItem onClick={() => navigate('/profile')}>
+            <Menu
+                anchorEl={anchorUserMenu}
+                open={Boolean(anchorUserMenu)}
+                onClose={handleCloseUserMenu}
+                onClick={handleCloseUserMenu}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            >
+                {currentUser && (
+                    <Typography variant="body2" color="text.secondary" sx={{ px: 2, py: 1 }} component="div">
+                        Signed in as <strong>{currentUser.name}</strong>
+                    </Typography>
+                )}
+                <Divider />
+                <MenuItem onClick={openProfile}>
                     <ListItemIcon>
-                        <Settings fontSize='small' />
+                        <Settings fontSize="small" />
                     </ListItemIcon>
                     Profile
                 </MenuItem>
                 <MenuItem onClick={handleLogout}>
                     <ListItemIcon>
-                        <Logout fontSize='small' />
+                        <Logout fontSize="small" />
                     </ListItemIcon>
-                    Log Out
+                    Log out
                 </MenuItem>
             </Menu>
             <Profile />
         </>
-    )
-}
+    );
+};
 
-export default UserMenu
+export default UserMenu;

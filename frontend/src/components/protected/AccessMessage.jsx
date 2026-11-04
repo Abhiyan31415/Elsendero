@@ -1,29 +1,25 @@
-import { Alert, AlertTitle, Button, Container } from '@mui/material'
-import React from 'react'
-import { useValue } from '../../context/ContextProvider'
+import { Box, Button, Container, Paper, Typography } from '@mui/material'
 import { Lock } from '@mui/icons-material'
+import { useValue } from '../../context/ContextProvider'
 
 const AccessMessage = () => {
-    const {dispatch}=useValue()
+  const { dispatch } = useValue()
   return (
-    <Container
-    sx={{py:5}}
-    >
-        <Alert
-        severity='error'
-        variant='outlined'
-        >
-            <AlertTitle>Forbidden Access</AlertTitle>
-        Please Login or register to access this page
-        <Button
-        variant='outlined'
-        sx={{ml:2}}
-        startIcon={<Lock/>}
-        onClick={()=>dispatch({type:'OPEN_LOGIN'})}
-        >
-            Login
+    <Container maxWidth="sm" sx={{ py: 6 }}>
+      <Paper variant="outlined" sx={{ p: 4, textAlign: 'center' }}>
+        <Box sx={{ color: 'text.secondary', mb: 1 }}>
+          <Lock fontSize="large" />
+        </Box>
+        <Typography variant="h6" gutterBottom>
+          Log in to continue
+        </Typography>
+        <Typography color="text.secondary" sx={{ mb: 3 }}>
+          You need an account to use this page. Log in or create a free account — it only takes a minute.
+        </Typography>
+        <Button variant="contained" startIcon={<Lock />} onClick={() => dispatch({ type: 'OPEN_LOGIN' })}>
+          Log in / Register
         </Button>
-        </Alert>
+      </Paper>
     </Container>
   )
 }

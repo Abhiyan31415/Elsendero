@@ -1,3 +1,4 @@
+import { toImageUrl } from '../../../utils/imageUrl';
 import React from 'react';
 import { Cancel } from '@mui/icons-material';
 import { IconButton, ImageList, ImageListItem, ImageListItemBar } from '@mui/material';
@@ -21,7 +22,7 @@ function ImagesList() {
     >
       {images.map((image, index) => (
         <ImageListItem key={index} cols={1} rows={1}>
-          <img src={image} alt='rooms' loading='lazy' style={{ height: '100%' }} />
+          <img src={toImageUrl(image)} alt='rooms' loading='lazy' style={{ height: '100%' }} />
           <ImageListItemBar
             position='top'
             sx={{

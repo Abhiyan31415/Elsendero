@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { AppBar, IconButton, Typography, Container, Toolbar, Box, Button } from "@mui/material";
 import MenuIconSharp from '@mui/icons-material/MenuSharp';
 import LockIcon from '@mui/icons-material/Lock';
-import { useNavigate } from 'react-router-dom';
 
 import UserIcons from './user/UserIcons';
 import { useValue } from '../context/ContextProvider';
@@ -11,12 +10,8 @@ import Sidebar from './sidebar/Sidebar';
 const NavBar = () => {
     const { state: { currentUser }, dispatch } = useValue();
     const [isOpen, setIsOpen] = useState(false);
-    const navigate = useNavigate();  // Call useNavigate here, not inside the function
 
-    const handleLoginClick = () => {
-        dispatch({ type: 'OPEN_LOGIN' });
-        navigate('/login'); // Redirect to login page
-    };
+    const handleLoginClick = () => dispatch({ type: 'OPEN_LOGIN' });
 
     return (
         <>

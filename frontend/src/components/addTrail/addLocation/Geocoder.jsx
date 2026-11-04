@@ -1,3 +1,4 @@
+import { MAPBOX_TOKEN } from '../../../config';
 import React from 'react'
 import MapBoxGeocoder from '@mapbox/mapbox-gl-geocoder'
 import { useValue } from '../../../context/ContextProvider'
@@ -5,7 +6,7 @@ import { useControl } from 'react-map-gl'
 function Geocoder() {
     const {dispatch}=useValue()
     const ctrl=new MapBoxGeocoder({
-        accessToken:'pk.eyJ1IjoiYWJoaXlhbjEyMTIiLCJhIjoiY20zNnQwNWJnMGFsbzJqc2wxMTh2a2JjaCJ9.QY9Xj_GfNoO9yu9nkiMb1g',
+        accessToken:MAPBOX_TOKEN,
         marker:false,
         collapsed:true,
     })

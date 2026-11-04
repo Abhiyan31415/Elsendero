@@ -1,24 +1,25 @@
 import fetchData from './utils/fetchData'
+import { API_URL } from '../config'
 
+const url = `${API_URL}/trial`
 
-const url ='https://redly-phonological-mariam.ngrok-free.dev'
+export const createTrail = async (trail, currentUser, dispatch, setPage) => {
+    dispatch({ type: 'START_LOADING' })
 
-export const createTrail =async(trail,currentUser,dispatch,setPage)=>{
-    dispatch({type:'START_LOADING'})
-
-    const result=await fetchData({url,body:trail,token:''},dispatch)   
-    if(result){
-        dispatch({type:'UPDATE_ALERT',payload:{open:true,message:'Trail has been created successfully',severity:'success'}})
-    dispatch({type:'RESET_TRAIL'})
-    setPage(0)
+    const result = await fetchData({ url, body: trail, token: currentUser?.token }, dispatch)
+    if (result) {
+        dispatch({ type: 'UPDATE_ALERT', payload: { open: true, message: 'Trail has been created successfully', severity: 'success' } })
+        dispatch({ type: 'RESET_TRAIL' })
+        setPage(0)
     }
 
-    dispatch({type:"END_LOADING"})
+    dispatch({ type: "END_LOADING" })
 };
-export const getTrails =async(dispatch)=>{
-    const result =await fetchData({url,method:'GET'},dispatch)
 
-    if(result){
-        dispatch({type:'UPDATE_TRAILS',payload:result})
+export const getTrails = async (dispatch) => {
+    const result = await fetchData({ url, method: 'GET' }, dispatch)
+
+    if (result) {
+        dispatch({ type: 'UPDATE_TRAILS', payload: result })
     }
 }
