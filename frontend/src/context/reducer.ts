@@ -3,12 +3,11 @@ import { persistUser } from './session';
 import {
   EMPTY_DETAILS,
   EMPTY_PROFILE,
-  MAX_PRICE_FILTER,
   type Action,
   type State,
 } from './state';
 
-export const applyFilter = (trails: Trail[], address: LngLat | null, price: number): Trail[] => {
+export const applyFilter = (trails: Trail[], address: LngLat | null, price: number | null): Trail[] => {
   let filtered = trails;
   if (address) {
     const { lng, lat } = address;
@@ -16,8 +15,8 @@ export const applyFilter = (trails: Trail[], address: LngLat | null, price: numb
       (trail) => Math.abs(lng - trail.sloc[0]) <= 1 && Math.abs(lat - trail.sloc[1]) <= 1,
     );
   }
-  if (price < MAX_PRICE_FILTER) {
-    filtered = filtered.filter((trail) => trail.price <= price);
+  if (price !== null) {
+    filtered = filtered.filter((trail) => (trail.price ?? 0) <= price);
   }
   return filtered;
 };
@@ -79,7 +78,7 @@ const reducer = (state: State, action: Action): State => {
         ...state,
         trails: action.payload,
         addressFilter: null,
-        priceFilter: MAX_PRICE_FILTER,
+        priceFilter: null,
         filteredTrails: action.payload,
       };
     case 'UPDATE_TRAIL':
@@ -90,6 +89,8 @@ const reducer = (state: State, action: Action): State => {
         priceFilter: action.payload,
         filteredTrails: applyFilter(state.trails, state.addressFilter, action.payload),
       };
+    case 'RESET_FILTERS':
+      return { ...state, priceFilter: null, addressFilter: null, filteredTrails: state.trails };
     case 'FILTER_ADDRESS':
       return {
         ...state,

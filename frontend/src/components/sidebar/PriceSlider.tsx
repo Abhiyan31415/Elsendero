@@ -2,26 +2,40 @@
 
 import { Box, Slider, Typography } from '@mui/material';
 import { useValue } from '@/context/ContextProvider';
-import { MAX_PRICE_FILTER } from '@/context/state';
+import { formatPrice, niceCeiling } from '@/utils/format';
 
-const marks = [0, 50, 100, 150].map((value) => ({ value, label: `$${value}` }));
-
+/** Max-price filter. Its range follows the most expensive trail, so every trail can be reached. */
 const PriceSlider = () => {
   const {
-    state: { priceFilter },
+    state: { priceFilter, trails },
     dispatch,
   } = useValue();
+  const max = niceCeiling(Math.max(0, ...trails.map((t) => Number(t.price) || 0)));
+  const step = max / 20;
+  const value = priceFilter ?? max;
+
   return (
-    <Box sx={{ mt: 5 }}>
-      <Typography id="price-filter-label">Max Price: {'$' + priceFilter}</Typography>
+    <Box sx={{ mt: 4, px: 1 }}>
+      <Typography id="price-filter-label" gutterBottom>
+        Max price: <strong>{priceFilter === null ? 'Any' : formatPrice(value)}</strong>
+      </Typography>
       <Slider
         aria-labelledby="price-filter-label"
         min={0}
-        max={MAX_PRICE_FILTER}
+        max={max}
+        step={step}
         valueLabelDisplay="auto"
-        marks={marks}
-        value={priceFilter}
-        onChange={(_e, price) => dispatch({ type: 'FILTER_PRICE', payload: price as number })}
+        valueLabelFormat={(v) => formatPrice(v)}
+        getAriaValueText={(v) => formatPrice(v)}
+        marks={[
+          { value: 0, label: 'Free' },
+          { value: max, label: formatPrice(max) },
+        ]}
+        value={value}
+        onChange={(_e, v) => {
+          const price = v as number;
+          dispatch({ type: 'FILTER_PRICE', payload: price >= max ? null : price });
+        }}
       />
     </Box>
   );

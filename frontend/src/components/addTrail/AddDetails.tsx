@@ -35,11 +35,11 @@ function AddDetails() {
   const handleCostTypeChange = (e: ChangeEvent<HTMLInputElement>) => {
     const next = Number(e.target.value);
     setCostType(next);
-    dispatch({ type: 'UPDATE_DETAILS', payload: { price: next === 0 ? 0 : 15 } });
+    dispatch({ type: 'UPDATE_DETAILS', payload: { price: next === 0 ? 0 : 500 } });
   };
 
   const handlePriceChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const value = Math.max(0, Math.min(100, Number(e.target.value) || 0));
+    const value = Math.max(0, Math.min(100000, Number(e.target.value) || 0));
     dispatch({ type: 'UPDATE_DETAILS', payload: { price: value } });
   };
 
@@ -59,11 +59,11 @@ function AddDetails() {
           <FormControlLabel value={1} control={<Radio />} label="Nominal Fee" />
           {Boolean(costType) && (
             <TextField
-              sx={{ width: '9ch !important' }}
+              sx={{ width: '14ch !important' }}
               variant="standard"
               slotProps={{
-                input: { startAdornment: <InputAdornment position="start">$</InputAdornment> },
-                htmlInput: { type: 'number', min: 1, max: 100, 'aria-label': 'Price' },
+                input: { startAdornment: <InputAdornment position="start">Rs</InputAdornment> },
+                htmlInput: { type: 'number', min: 1, max: 100000, 'aria-label': 'Price' },
               }}
               value={price}
               onChange={handlePriceChange}

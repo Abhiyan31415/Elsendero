@@ -8,8 +8,6 @@ import type {
   TrailDetails,
 } from '@/types';
 
-export const MAX_PRICE_FILTER = 150;
-
 export interface State {
   currentUser: CurrentUser | null;
   /** False until the stored session has been read from localStorage on the client. */
@@ -26,7 +24,8 @@ export interface State {
   checkpoints: Checkpoint[];
   // Trails + filters
   trails: Trail[];
-  priceFilter: number;
+  /** Highest price to show; null means any price. */
+  priceFilter: number | null;
   addressFilter: LngLat | null;
   filteredTrails: Trail[];
   /** Trail shown in the quick-view dialog. */
@@ -49,7 +48,7 @@ export const initialState: State = {
   flocation: { lng: 0, lat: 0 },
   checkpoints: [],
   trails: [],
-  priceFilter: MAX_PRICE_FILTER,
+  priceFilter: null,
   addressFilter: null,
   filteredTrails: [],
   trail: null,
@@ -77,7 +76,8 @@ export type Action =
   | { type: 'RESET_TRAIL' }
   | { type: 'UPDATE_TRAILS'; payload: Trail[] }
   | { type: 'UPDATE_TRAIL'; payload: Trail | null }
-  | { type: 'FILTER_PRICE'; payload: number }
+  | { type: 'FILTER_PRICE'; payload: number | null }
+  | { type: 'RESET_FILTERS' }
   | { type: 'FILTER_ADDRESS'; payload: LngLat }
   | { type: 'CLEAR_ADDRESS' };
 

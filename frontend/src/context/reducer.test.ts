@@ -64,6 +64,10 @@ describe('reducer', () => {
     expect(s.filteredTrails.map((t) => t.id)).toEqual(['a']);
     s = reducer(s, { type: 'CLEAR_ADDRESS' });
     expect(s.filteredTrails.map((t) => t.id)).toEqual(['a', 'c']);
+    s = reducer(s, { type: 'FILTER_ADDRESS', payload: { lng: 85.2, lat: 27.2 } });
+    s = reducer(s, { type: 'RESET_FILTERS' });
+    expect(s).toMatchObject({ priceFilter: null, addressFilter: null });
+    expect(s.filteredTrails).toHaveLength(3);
   });
 
   it('manages checkpoints and images', () => {

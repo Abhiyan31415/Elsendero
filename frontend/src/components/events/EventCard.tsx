@@ -22,7 +22,7 @@ import ChatIcon from '@mui/icons-material/Chat';
 import { useValue } from '@/context/ContextProvider';
 import { createEvent, getEvents } from '@/actions/event';
 import { recordId, type Event, type NewEvent } from '@/types';
-import { formatDate } from '@/utils/format';
+import { formatDateRange } from '@/utils/format';
 
 const EMPTY_EVENT: NewEvent = { title: '', description: '', from: '', to: '', location: '', participants: [] };
 
@@ -130,7 +130,7 @@ function EventCard() {
                       {event.description}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      <strong>From:</strong> {formatDate(event.from)} – <strong>To:</strong> {formatDate(event.to)}
+                      <strong>When:</strong> {formatDateRange(event.from, event.to)}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       <strong>Location:</strong> {event.location}
